@@ -1,9 +1,12 @@
 package com.nostra13.universalimageloader.sample.fragment;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,6 +33,7 @@ import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by maitray on 9/8/16.
@@ -37,6 +41,8 @@ import java.util.ArrayList;
 public class VideoGalleryFragment extends AbsListViewBaseFragment {
     public static final int INDEX = 6;
     public String[] IMAGE_URLS;
+    public Bitmap[] bitmapslist;
+    public ProgressDialog pdia;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -100,7 +106,7 @@ public class VideoGalleryFragment extends AbsListViewBaseFragment {
             }
 
             ImageLoader.getInstance()
-                    .displayImage(IMAGE_URLS[position], holder.imageView, options, new SimpleImageLoadingListener() {
+                    .displayImage(IMAGE_URLS[position],bitmapslist[position],holder.imageView, options, new SimpleImageLoadingListener() {
                         @Override
                         public void onLoadingStarted(String imageUri, View view) {
                             holder.progressBar.setProgress(0);
@@ -141,7 +147,7 @@ public class VideoGalleryFragment extends AbsListViewBaseFragment {
 
             Document doc;
             String linkText = "";
-            String url1="http://server.mediacallz.com/ContentStore/files/Photos/";
+            String url1="http://server.mediacallz.com/ContentStore/files/videos/";
             try {
                 doc = Jsoup.connect(url1).get();
                 //Elements links = doc.select("td.right td a").get();
@@ -162,6 +168,69 @@ public class VideoGalleryFragment extends AbsListViewBaseFragment {
         protected void onPostExecute(ArrayList<String> result) {
 
             IMAGE_URLS=arr_linkText.toArray(new String[0]);
+            GeneratePreviewTask generatePreviewTask = new GeneratePreviewTask();
+            generatePreviewTask.execute(IMAGE_URLS);
+//            ((GridView) listView).setAdapter(new ImageAdapter(getActivity()));
+//            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//                @Override
+//                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                    Intent intent = new Intent(getActivity(), SimpleImageActivity.class);
+//                    intent.putExtra(Constants.Extra.FRAGMENT_INDEX, VideoPagerFragment.INDEX);
+//                    intent.putExtra(Constants.Extra.IMAGE_POSITION, position);
+//                    startActivity(intent);
+//                }
+//            });
+
+
+        }
+    }
+
+    class GeneratePreviewTask extends AsyncTask<String, Void, ArrayList<Bitmap>>{
+        @Override
+        protected void onPreExecute(){
+            super.onPreExecute();
+            pdia = new ProgressDialog(getContext());
+            pdia.setMessage("Loading...");
+            pdia.show();
+        }
+
+        @Override
+        protected ArrayList<Bitmap> doInBackground(String... params) {
+            ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
+            for(String url : params){
+                Bitmap bitmap = null;
+                MediaMetadataRetriever mediaMetadataRetriever = null;
+                try
+                {
+                    mediaMetadataRetriever = new MediaMetadataRetriever();
+                    if (Build.VERSION.SDK_INT >= 14)
+                        mediaMetadataRetriever.setDataSource(url, new HashMap<String, String>());
+                    else
+                        mediaMetadataRetriever.setDataSource(url);
+                    //   mediaMetadataRetriever.setDataSource(videoPath);
+                    bitmap = mediaMetadataRetriever.getFrameAtTime();
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+                finally
+                {
+                    if (mediaMetadataRetriever != null)
+                    {
+                        mediaMetadataRetriever.release();
+                    }
+                }
+                bitmaps.add(bitmap);
+            }
+            return bitmaps;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<Bitmap> result) {
+
+            bitmapslist=result.toArray(new Bitmap[0]);
+
             ((GridView) listView).setAdapter(new ImageAdapter(getActivity()));
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
@@ -172,7 +241,7 @@ public class VideoGalleryFragment extends AbsListViewBaseFragment {
                     startActivity(intent);
                 }
             });
-
+        pdia.dismiss();
 
         }
     }
