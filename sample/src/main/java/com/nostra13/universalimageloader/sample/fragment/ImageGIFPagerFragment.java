@@ -291,29 +291,18 @@ public class ImageGIFPagerFragment extends BaseFragment {
 
         @Override protected byte[] doInBackground(final String... params) {
             final String gifUrl = params[0];
-            String file = Environment.getDataDirectory().toString();
-            File f = new File(file+"/1234.gif");
 
             if (gifUrl == null)
                 return null;
 
             try {
                 byte[] b = ByteArrayHttpClient.get(gifUrl);
-                FileOutputStream fos = new FileOutputStream(f);
-                fos.write(b);
-                fos.flush();
-                fos.close();
                 return b;
             } catch (OutOfMemoryError e) {
                 Log.e(TAG, "GifDecode OOM: " + gifUrl, e);
                 return null;
             }
-            catch (IOException e)
-            {
-                Log.e(TAG, "GifDecode OOM: " + gifUrl, e);
-                return null;
 
-            }
         }
     }
 
