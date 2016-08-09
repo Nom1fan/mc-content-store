@@ -1,5 +1,6 @@
 package com.nostra13.universalimageloader.sample.fragment;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -36,6 +37,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -269,80 +274,58 @@ public class VideoPagerFragment extends BaseFragment {
     }
 
     // DownloadImage AsyncTask
-    private class DownloadImage extends AsyncTask<String, Void, Bitmap> {
+    private class DownloadImage extends AsyncTask<String, Void, String> {
 
-
+        ProgressDialog PD;
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            Toast.makeText(getContext(),"test",Toast.LENGTH_LONG);
-            Toast.makeText(getContext(),"test1111",Toast.LENGTH_LONG);
-            // Create a progressdialog
-            // mProgressDialog = new ProgressDialog(MainActivity.this);
-            // Set progressdialog title
-            // mProgressDialog.setTitle("Download Image Tutorial");
-            // Set progressdialog message
-            //mProgressDialog.setMessage("Loading...");
-            //mProgressDialog.setIndeterminate(false);
-            // Show progressdialog
-            //mProgressDialog.show();
+            PD= ProgressDialog.show(getActivity(),null, "Downloading ...", true);
+            PD.setCancelable(true);
         }
 
         @Override
-        protected Bitmap doInBackground(String... URL) {
-
-            String imageURL = URL[0];
-            String[] ext = imageURL.split("/Photos/");
-
-            Bitmap bitmap = null;
-            try {
-                // Download Image from URL
-                InputStream input = new java.net.URL(imageURL).openStream();
-                //Toast.makeText(getContext(),imageURL,Toast.LENGTH_LONG);
-                // Decode Bitmap
-                bitmap = BitmapFactory.decodeStream(input);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return bitmap;
+        protected String doInBackground(String... URL) {
+            String filename = new BigInteger(130,new SecureRandom()).toString(32)+".mp4";
+            DownloadFile(URL[0],filename);
+            return URL[0];
         }
 
         @Override
-        protected void onPostExecute(Bitmap result) {
-            // Set the bitmap into ImageView
-//            image.setImageBitmap(result);
-            String path = Environment.getExternalStorageDirectory().toString();
-            path = path+"/imageloader";
-            OutputStream fOut = null;
-            String s = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-            StringBuilder salt = new StringBuilder();
-            Random rnd = new Random();
-            while (salt.length() < 18) {
-                int index = (int) (rnd.nextFloat() * s.length());
-                salt.append(s.charAt(index));
-            }
-            String saltStr = salt.toString();
-
-            File f = new File(path);
-            if(!f.exists())
-            {
-                f.mkdir();
-            }
-            File file = new File(path, saltStr+".jpeg"); // the File to save to
-            try {
-                fOut = new FileOutputStream(file);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            result.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
-            Toast.makeText(getActivity().getApplicationContext(),"the file "+saltStr+".jpeg"+" is stored at "+path,Toast.LENGTH_LONG);
-
-            // Close progressdialog
-            // mProgressDialog.dismiss();
-
+        protected void onPostExecute(String result) {
+            PD.dismiss();
         }
 
+
+    }
+    public void DownloadFile(String fileURL, String fileName) {
+        try {
+            String RootDir = Environment.getExternalStorageDirectory()
+                    + File.separator + "Video";
+            File RootFile = new File(RootDir);
+            RootFile.mkdir();
+            // File root = Environment.getExternalStorageDirectory();
+            URL u = new URL(fileURL);
+            HttpURLConnection c = (HttpURLConnection) u.openConnection();
+            c.setRequestMethod("GET");
+            c.setDoOutput(true);
+            c.connect();
+            FileOutputStream f = new FileOutputStream(new File(RootFile,
+                    fileName));
+            InputStream in = c.getInputStream();
+            byte[] buffer = new byte[1024];
+            int len1 = 0;
+
+            while ((len1 = in.read(buffer)) > 0) {
+                f.write(buffer, 0, len1);
+            }
+            f.close();
+
+
+        } catch (Exception e) {
+
+            Log.d("Error....", e.toString());
+        }
 
     }
 }
