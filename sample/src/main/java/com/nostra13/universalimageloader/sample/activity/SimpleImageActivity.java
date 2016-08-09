@@ -20,6 +20,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
+import com.nostra13.universalimageloader.sample.fragment.ImageGIFGridFragment;
+import com.nostra13.universalimageloader.sample.fragment.ImageGIFPagerFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageGalleryFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageGridFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageListFragment;
@@ -47,6 +49,7 @@ public class SimpleImageActivity extends FragmentActivity {
 				}
 				titleRes = R.string.ac_name_image_list;
 				break;
+
 			case ImageGridFragment.INDEX:
 				tag = ImageGridFragment.class.getSimpleName();
 				fr = getSupportFragmentManager().findFragmentByTag(tag);
@@ -55,7 +58,16 @@ public class SimpleImageActivity extends FragmentActivity {
 				}
 				titleRes = R.string.ac_name_image_grid;
 				break;
-			case ImagePagerFragment.INDEX:
+            case ImageGIFGridFragment.INDEX:
+                tag = ImageGridFragment.class.getSimpleName();
+                fr = getSupportFragmentManager().findFragmentByTag(tag);
+                if (fr == null) {
+                    fr = new ImageGIFGridFragment();
+                }
+                titleRes = R.string.ac_name_image_grid;
+                break;
+
+            case ImagePagerFragment.INDEX:
 				tag = ImagePagerFragment.class.getSimpleName();
 				fr = getSupportFragmentManager().findFragmentByTag(tag);
 				if (fr == null) {
@@ -64,6 +76,18 @@ public class SimpleImageActivity extends FragmentActivity {
 				}
 				titleRes = R.string.ac_name_image_pager;
 				break;
+
+
+            case ImageGIFPagerFragment.INDEX:
+                tag = ImagePagerFragment.class.getSimpleName();
+                fr = getSupportFragmentManager().findFragmentByTag(tag);
+                if (fr == null) {
+                    fr = new ImageGIFPagerFragment();
+                    fr.setArguments(getIntent().getExtras());
+                }
+                titleRes = R.string.ac_name_image_pager;
+                break;
+
 			case ImageGalleryFragment.INDEX:
 				tag = ImageGalleryFragment.class.getSimpleName();
 				fr = getSupportFragmentManager().findFragmentByTag(tag);

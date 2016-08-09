@@ -24,6 +24,7 @@ import android.view.View;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
+import com.nostra13.universalimageloader.sample.fragment.ImageGIFGridFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageGalleryFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageGridFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageListFragment;
@@ -64,6 +65,12 @@ public class HomeActivity extends Activity {
 		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageGridFragment.INDEX);
 		startActivity(intent);
 	}
+
+    public void onImageGIFGridClick(View view) {
+        Intent intent = new Intent(this, SimpleImageActivity.class);
+        intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageGIFGridFragment.INDEX);
+        startActivity(intent);
+    }
 
 	public void onImagePagerClick(View view) {
 		Intent intent = new Intent(this, SimpleImageActivity.class);

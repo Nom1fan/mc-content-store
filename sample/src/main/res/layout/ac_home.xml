@@ -34,6 +34,14 @@
 			android:onClick="onImageGridClick"
 			android:text="@string/button_image_grid" />
 
+        <Button
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:onClick="onImageGIFGridClick"
+            android:text="@string/button_image_grid_gif" />
+
 		<!--<Button-->
 			<!--android:layout_width="320dp"-->
 			<!--android:layout_height="wrap_content"-->

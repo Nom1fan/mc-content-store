@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.nostra13.universalimageloader"
-        minSdkVersion 5
+        minSdkVersion 8
         targetSdkVersion 22
         versionCode 40
         versionName "1.9.5"
@@ -23,8 +23,21 @@ dependencies {
     compile 'org.jsoup:jsoup:1.9.2'
     compile 'com.android.support:support-v4:23.1.1'
     compile 'com.squareup.okhttp:okhttp:2.4.0'
+    compile 'com.felipecsl:gifimageview:2.1.0'
+    compile 'org.apache.directory.studio:org.apache.commons.io:2.4'
+    compile 'com.android.support:appcompat-v7:23.2.1'
+    compile 'com.android.support:design:23.2.1'
+    compile 'com.android.support:support-v4:23.2.1'
 
+    // RecyclerView
+    compile 'com.android.support:recyclerview-v7:23.1.1'
 
+    // volley
+    compile 'com.android.volley:volley:1.0.0'
+
+    // glide
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'org.jsoup:jsoup:1.9.2'
 }
 
 

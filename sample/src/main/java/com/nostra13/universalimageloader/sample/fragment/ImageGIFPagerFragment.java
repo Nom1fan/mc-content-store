@@ -20,7 +20,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -28,20 +27,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.felipecsl.gifimageview.library.GifImageView;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
 
@@ -49,19 +43,17 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
-public class ImagePagerFragment extends BaseFragment {
+public class ImageGIFPagerFragment extends BaseFragment {
 
-	public static final int INDEX = 2;
+	public static final int INDEX = 7;
     public String[] IMAGE_URLS;
     ViewPager pager;
     Button button;
@@ -112,60 +104,60 @@ public class ImagePagerFragment extends BaseFragment {
 		public Object instantiateItem(ViewGroup view, int position) {
 			View imageLayout = inflater.inflate(R.layout.item_pager_image, view, false);
 			assert imageLayout != null;
-			ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
-           //final GifImageView imageView =(GifImageView) imageLayout.findViewById(R.id.image);
+			//ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
+           final GifImageView imageView =(GifImageView) imageLayout.findViewById(R.id.image);
             //imageView.startAnimation();
 
-//            new GifDataDownloader() {
-//                @Override protected void onPostExecute(final byte[] bytes) {
-//                    imageView.setBytes(bytes);
-//                    imageView.startAnimation();
-//                    Log.d("TAG----", "GIF width is " + imageView.getGifWidth());
-//                    Log.d("TAG---", "GIF height is " + imageView.getGifHeight());
-//                }
-//            }.execute(IMAGE_URLS[position]);
+            new GifDataDownloader() {
+                @Override protected void onPostExecute(final byte[] bytes) {
+                    imageView.setBytes(bytes);
+                    imageView.startAnimation();
+                    Log.d("TAG----", "GIF width is " + imageView.getGifWidth());
+                    Log.d("TAG---", "GIF height is " + imageView.getGifHeight());
+                }
+            }.execute(IMAGE_URLS[position]);
 
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
             button = (Button) imageLayout.findViewById(R.id.button);
             final String simage=IMAGE_URLS[position];
 
 
-            ImageLoader.getInstance().displayImage(IMAGE_URLS[position], imageView, options, new SimpleImageLoadingListener() {
-				@Override
-				public void onLoadingStarted(String imageUri, View view) {
-					spinner.setVisibility(View.VISIBLE);
-				}
-
-				@Override
-				public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-					String message = null;
-					switch (failReason.getType()) {
-						case IO_ERROR:
-							message = "Input/Output error";
-							break;
-						case DECODING_ERROR:
-							message = "Image can't be decoded";
-							break;
-						case NETWORK_DENIED:
-							message = "Downloads are denied";
-							break;
-						case OUT_OF_MEMORY:
-							message = "Out Of Memory error";
-							break;
-						case UNKNOWN:
-							message = "Unknown error";
-							break;
-					}
-					Toast.makeText(view.getContext(), message, Toast.LENGTH_SHORT).show();
-
-					spinner.setVisibility(View.GONE);
-				}
-
-				@Override
-				public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-					spinner.setVisibility(View.GONE);
-				}
-			});
+//            ImageLoader.getInstance().displayImage(IMAGE_URLS[position], imageView, options, new SimpleImageLoadingListener() {
+//				@Override
+//				public void onLoadingStarted(String imageUri, View view) {
+//					spinner.setVisibility(View.VISIBLE);
+//				}
+//
+//				@Override
+//				public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+//					String message = null;
+//					switch (failReason.getType()) {
+//						case IO_ERROR:
+//							message = "Input/Output error";
+//							break;
+//						case DECODING_ERROR:
+//							message = "Image can't be decoded";
+//							break;
+//						case NETWORK_DENIED:
+//							message = "Downloads are denied";
+//							break;
+//						case OUT_OF_MEMORY:
+//							message = "Out Of Memory error";
+//							break;
+//						case UNKNOWN:
+//							message = "Unknown error";
+//							break;
+//					}
+//					Toast.makeText(view.getContext(), message, Toast.LENGTH_SHORT).show();
+//
+//					spinner.setVisibility(View.GONE);
+//				}
+//
+//				@Override
+//				public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//					spinner.setVisibility(View.GONE);
+//				}
+//			});
 
             button.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View arg0) {
@@ -208,7 +200,7 @@ public class ImagePagerFragment extends BaseFragment {
 
             Document doc;
             String linkText = "";
-            String url1="http://server.mediacallz.com/ContentStore/files/Photos/";
+            String url1="http://server.mediacallz.com/ContentStore/files/Gif/";
             try {
                 doc = Jsoup.connect(url1).get();
                 //Elements links = doc.select("td.right td a").get();
@@ -301,6 +293,22 @@ public class ImagePagerFragment extends BaseFragment {
         }
     }
 
+    public class GifDataDownloader extends AsyncTask<String, Void, byte[]> {
+        private static final String TAG = "GifDataDownloader";
 
+        @Override protected byte[] doInBackground(final String... params) {
+            final String gifUrl = params[0];
+
+            if (gifUrl == null)
+                return null;
+
+            try {
+                return ByteArrayHttpClient.get(gifUrl);
+            } catch (OutOfMemoryError e) {
+                Log.e(TAG, "GifDecode OOM: " + gifUrl, e);
+                return null;
+            }
+        }
+    }
 }
 
