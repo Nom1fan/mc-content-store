@@ -24,6 +24,8 @@ import com.nostra13.universalimageloader.sample.fragment.ImageGalleryFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageGridFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageListFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImagePagerFragment;
+import com.nostra13.universalimageloader.sample.fragment.VideoGalleryFragment;
+import com.nostra13.universalimageloader.sample.fragment.VideoPagerFragment;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -71,6 +73,23 @@ public class SimpleImageActivity extends FragmentActivity {
 					fr = new ImageGalleryFragment();
 				}
 				titleRes = R.string.ac_name_image_gallery;
+				break;
+			case VideoGalleryFragment.INDEX:
+				tag = VideoGalleryFragment.class.getSimpleName();
+				fr = getSupportFragmentManager().findFragmentByTag(tag);
+				if (fr == null) {
+					fr = new VideoGalleryFragment();
+				}
+				titleRes = R.string.ac_name_image_gallery;
+				break;
+			case VideoPagerFragment.INDEX:
+				tag = VideoPagerFragment.class.getSimpleName();
+				fr = getSupportFragmentManager().findFragmentByTag(tag);
+				if (fr == null) {
+					fr = new VideoPagerFragment();
+					fr.setArguments(getIntent().getExtras());
+				}
+				titleRes = R.string.ac_name_image_pager;
 				break;
 		}
 

@@ -20,6 +20,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -33,6 +34,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -46,9 +48,13 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -56,30 +62,24 @@ import java.util.ArrayList;
 public class ImagePagerFragment extends BaseFragment {
 
 	public static final int INDEX = 2;
-    public String[] IMAGE_URLS;
-    ViewPager pager;
-    Button button;
-    ImageView image;
+	public String[] IMAGE_URLS;
+	ViewPager pager;
+	Button button;
+	ImageView image;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fr_image_pager, container, false);
 
-        MyTask myTask = new MyTask();
+		MyTask myTask = new MyTask();
 
 		pager = (ViewPager) rootView.findViewById(R.id.pager);
 		myTask.execute();
 		return rootView;
 	}
 
-	private
+	private class ImageAdapter extends PagerAdapter {
 
-
-
-
-
-   class ImageAdapter extends PagerAdapter {
-
-	//	private static final String[] IMAGE_URLS = Constants.IMAGES;
+		//	private static final String[] IMAGE_URLS = Constants.IMAGES;
 
 		private LayoutInflater inflater;
 		private DisplayImageOptions options;
@@ -103,7 +103,6 @@ public class ImagePagerFragment extends BaseFragment {
 		public void destroyItem(ViewGroup container, int position, Object object) {
 			container.removeView((View) object);
 		}
-
 		@Override
 		public int getCount() {
 			return IMAGE_URLS.length;
@@ -114,12 +113,24 @@ public class ImagePagerFragment extends BaseFragment {
 			View imageLayout = inflater.inflate(R.layout.item_pager_image, view, false);
 			assert imageLayout != null;
 			ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
+			//final GifImageView imageView =(GifImageView) imageLayout.findViewById(R.id.image);
+			//imageView.startAnimation();
+
+//            new GifDataDownloader() {
+//                @Override protected void onPostExecute(final byte[] bytes) {
+//                    imageView.setBytes(bytes);
+//                    imageView.startAnimation();
+//                    Log.d("TAG----", "GIF width is " + imageView.getGifWidth());
+//                    Log.d("TAG---", "GIF height is " + imageView.getGifHeight());
+//                }
+//            }.execute(IMAGE_URLS[position]);
+
 			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
-            button = (Button) imageLayout.findViewById(R.id.button);
-            final String simage=IMAGE_URLS[position];
+			button = (Button) imageLayout.findViewById(R.id.button);
+			final String simage=IMAGE_URLS[position];
 
 
-            ImageLoader.getInstance().displayImage(IMAGE_URLS[position], imageView, options, new SimpleImageLoadingListener() {
+			ImageLoader.getInstance().displayImage(IMAGE_URLS[position], imageView, options, new SimpleImageLoadingListener() {
 				@Override
 				public void onLoadingStarted(String imageUri, View view) {
 					spinner.setVisibility(View.VISIBLE);
@@ -156,13 +167,14 @@ public class ImagePagerFragment extends BaseFragment {
 				}
 			});
 
-            button.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View arg0) {
+			button.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View arg0) {
 
-                    // Execute DownloadImage AsyncTask
-                    new DownloadImage().execute(simage);
-                }
-            });
+					// Execute DownloadImage AsyncTask
+					new DownloadImage().execute(simage);
+					Toast.makeText(getActivity().getApplication().getApplicationContext(),"this is image",Toast.LENGTH_LONG);
+				}
+			});
 
 			view.addView(imageLayout, 0);
 			return imageLayout;
@@ -188,88 +200,131 @@ public class ImagePagerFragment extends BaseFragment {
 	}
 
 
-    class MyTask extends AsyncTask<Void, Void, ArrayList<String>> {
+	class MyTask extends AsyncTask<Void, Void, ArrayList<String>> {
 
-        ArrayList<String> arr_linkText=new ArrayList<String>();
+		ArrayList<String> arr_linkText=new ArrayList<String>();
 
-        @Override
-        protected ArrayList<String> doInBackground(Void... params) {
+		@Override
+		protected ArrayList<String> doInBackground(Void... params) {
 
-            Document doc;
-            String linkText = "";
-            String url1="http://server.mediacallz.com/ContentStore/files/Photos/";
-            try {
-                doc = Jsoup.connect(url1).get();
-                //Elements links = doc.select("td.right td a").get();
-                for (Element el : doc.select("td a")) {
-                    linkText = el.attr("href");
-                    Log.d("filename----", url1 + linkText);
-                    arr_linkText.add(url1+linkText); // add value to ArrayList
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return arr_linkText;     //<< retrun ArrayList from here
-        }
-
-
-        @Override
-        protected void onPostExecute(ArrayList<String> result) {
-
-            IMAGE_URLS=arr_linkText.toArray(new String[0]);
-            pager.setAdapter(new ImageAdapter(getActivity()));
-            pager.setCurrentItem(getArguments().getInt(Constants.Extra.IMAGE_POSITION, 0));
+			Document doc;
+			String linkText = "";
+			String url1="http://server.mediacallz.com/ContentStore/files/Photos/";
+			try {
+				doc = Jsoup.connect(url1).get();
+				//Elements links = doc.select("td.right td a").get();
+				for (Element el : doc.select("td a")) {
+					linkText = el.attr("href");
+					Log.d("filename----", url1 + linkText);
+					arr_linkText.add(url1+linkText); // add value to ArrayList
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return arr_linkText;     //<< retrun ArrayList from here
+		}
 
 
-        }
-    }
+		@Override
+		protected void onPostExecute(ArrayList<String> result) {
 
-    // DownloadImage AsyncTask
-    private class DownloadImage extends AsyncTask<String, Void, Bitmap> {
+			IMAGE_URLS=arr_linkText.toArray(new String[0]);
+			pager.setAdapter(new ImageAdapter(getActivity()));
+			pager.setCurrentItem(getArguments().getInt(Constants.Extra.IMAGE_POSITION, 0));
 
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            Toast.makeText(getContext(),"test",Toast.LENGTH_LONG);
-            Toast.makeText(getContext(),"test1111",Toast.LENGTH_LONG);
-            // Create a progressdialog
-           // mProgressDialog = new ProgressDialog(MainActivity.this);
-            // Set progressdialog title
-           // mProgressDialog.setTitle("Download Image Tutorial");
-            // Set progressdialog message
-            //mProgressDialog.setMessage("Loading...");
-            //mProgressDialog.setIndeterminate(false);
-            // Show progressdialog
-            //mProgressDialog.show();
-        }
+		}
+	}
 
-        @Override
-        protected Bitmap doInBackground(String... URL) {
+	// DownloadImage AsyncTask
+	private class DownloadImage extends AsyncTask<String, Void, Bitmap> {
 
-            String imageURL = URL[0];
 
-            Bitmap bitmap = null;
-            try {
-                // Download Image from URL
-                InputStream input = new java.net.URL(imageURL).openStream();
-                //Toast.makeText(getContext(),imageURL,Toast.LENGTH_LONG);
-                // Decode Bitmap
-                bitmap = BitmapFactory.decodeStream(input);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return bitmap;
-        }
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			Toast.makeText(getContext(),"test",Toast.LENGTH_LONG);
+			Toast.makeText(getContext(),"test1111",Toast.LENGTH_LONG);
+			// Create a progressdialog
+			// mProgressDialog = new ProgressDialog(MainActivity.this);
+			// Set progressdialog title
+			// mProgressDialog.setTitle("Download Image Tutorial");
+			// Set progressdialog message
+			//mProgressDialog.setMessage("Loading...");
+			//mProgressDialog.setIndeterminate(false);
+			// Show progressdialog
+			//mProgressDialog.show();
+		}
 
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            // Set the bitmap into ImageView
-            image.setImageBitmap(result);
-            // Close progressdialog
-           // mProgressDialog.dismiss();
-        }
-    }
+		@Override
+		protected Bitmap doInBackground(String... URL) {
+
+			String imageURL = URL[0];
+
+			Bitmap bitmap = null;
+			try {
+				// Download Image from URL
+				InputStream input = new java.net.URL(imageURL).openStream();
+				//Toast.makeText(getContext(),imageURL,Toast.LENGTH_LONG);
+				// Decode Bitmap
+				bitmap = BitmapFactory.decodeStream(input);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return bitmap;
+		}
+
+		@Override
+		protected void onPostExecute(Bitmap result) {
+			// Set the bitmap into ImageView
+			//image.setImageBitmap(result);
+			//view.addView(imageLayout, 0);
+			// Close progressdialog
+			// mProgressDialog.dismiss();
+			String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWYZ1234567890";
+			StringBuilder salt = new StringBuilder();
+			Random rnd = new Random();
+			while (salt.length() < 18) {
+				int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+				salt.append(SALTCHARS.charAt(index));
+			}
+			String saltStr = salt.toString();
+
+
+			String state = Environment.getExternalStorageDirectory().toString();
+			String filename=state+"/"+saltStr+".png";
+
+			File dir = new File(state+"/imageloader");
+			try{
+				if(dir.mkdir()) {
+					System.out.println("Directory created");
+				} else {
+					System.out.println("Directory is not created");
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+
+			FileOutputStream out = null;
+			try {
+				out = new FileOutputStream(filename);
+				result.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+				// PNG is a lossless format, the compression factor (100) is ignored
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					if (out != null) {
+						out.close();
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+
 }
-
