@@ -80,6 +80,12 @@ public abstract class AbsListViewBaseFragment extends BaseFragment {
 		startActivity(intent);
 	}
 
+    protected void startGIFImagePagerActivity(int position) {
+        Intent intent = new Intent(getActivity(), SimpleImageActivity.class);
+        intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageGIFPagerFragment.INDEX);
+        intent.putExtra(Constants.Extra.IMAGE_POSITION, position);
+        startActivity(intent);
+    }
 	private void applyScrollListener() {
 		listView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), pauseOnScroll, pauseOnFling));
 	}

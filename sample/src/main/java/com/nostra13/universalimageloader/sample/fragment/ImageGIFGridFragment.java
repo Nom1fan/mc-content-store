@@ -146,92 +146,6 @@ public class ImageGIFGridFragment extends AbsListViewBaseFragment {
 		}
 	}
 
-    private class ImageAdapterGIF extends BaseAdapter {
-
-        //private static final String[] IMAGE_URLS = Constants.IMAGES;
-
-        private LayoutInflater inflater;
-
-        private DisplayImageOptions options;
-
-        ImageAdapterGIF(Context context) {
-            inflater = LayoutInflater.from(context);
-
-            options = new DisplayImageOptions.Builder()
-                    .showImageOnLoading(R.drawable.ic_stub)
-                    .showImageForEmptyUri(R.drawable.ic_empty)
-                    .showImageOnFail(R.drawable.ic_error)
-                    .cacheInMemory(true)
-                    .cacheOnDisk(true)
-                    .considerExifParams(true)
-                    .bitmapConfig(Bitmap.Config.RGB_565)
-                    .build();
-        }
-
-        @Override
-        public int getCount() {
-            return IMAGE_URLS.length;
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return null;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            final ViewHolder holder;
-            View view = convertView;
-            if (view == null) {
-                view = inflater.inflate(R.layout.item_grid_image, parent, false);
-                holder = new ViewHolder();
-                assert view != null;
-                holder.imageView = (ImageView) view.findViewById(R.id.image);
-                holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
-                view.setTag(holder);
-
-//                Glide.with(getContext()).load(IMAGE_URLS[position])
-//                        .thumbnail(0.5f)
-//                        .crossFade()
-//                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                        .into(holder.imageView);
-            } else {
-                holder = (ViewHolder) view.getTag();
-            }
-
-
-            ImageLoader.getInstance()
-                    .displayImage(IMAGE_URLS[position], holder.imageView, options, new SimpleImageLoadingListener() {
-                        @Override
-                        public void onLoadingStarted(String imageUri, View view) {
-                            holder.progressBar.setProgress(0);
-                            holder.progressBar.setVisibility(View.VISIBLE);
-                        }
-
-                        @Override
-                        public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                            holder.progressBar.setVisibility(View.GONE);
-                        }
-
-                        @Override
-                        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                            holder.progressBar.setVisibility(View.GONE);
-                        }
-                    }, new ImageLoadingProgressListener() {
-                        @Override
-                        public void onProgressUpdate(String imageUri, View view, int current, int total) {
-                            holder.progressBar.setProgress(Math.round(100.0f * current / total));
-                        }
-                    });
-
-            return view;
-        }
-    }
 
 	static class ViewHolder {
 		ImageView imageView;
@@ -276,7 +190,7 @@ public class ImageGIFGridFragment extends AbsListViewBaseFragment {
             listView.setOnItemClickListener(new OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    startImagePagerActivity(position);
+                    startGIFImagePagerActivity(position);
                 }
             });
 

@@ -15,6 +15,7 @@
     <string name="button_image_grid_gif">GIF</string>
 	<string name="button_image_pager">ViewPager</string>
 	<string name="button_image_gallery">Gallery</string>
+	<string name="button_video_gallery">Videos</string>
 	<string name="button_list_and_grid">ViewPager (ListView + GridView)</string>
 
 	<string name="title_list">List</string>

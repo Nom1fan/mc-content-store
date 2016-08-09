@@ -44,10 +44,12 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -167,11 +169,54 @@ public class ImageGIFPagerFragment extends BaseFragment {
                     // Execute DownloadImage AsyncTask
                     //new DownloadImage().execute(simage);
                     new GifImageDownloader() {
-                        @Override protected void onPostExecute(final byte[] bytes) {
-                            imageView.setBytes(bytes);
-                            imageView.startAnimation();
-                            Log.d("TAG----", "GIF width is " + imageView.getGifWidth());
-                            Log.d("TAG---", "GIF height is " + imageView.getGifHeight());
+                        protected void onPostExecute(byte[] bytes) {
+                            // Set the bitmap into ImageView
+                            //image.setImageBitmap(result);
+                            //view.addView(imageLayout, 0);
+                            // Close progressdialog
+                            // mProgressDialog.dismiss();
+                            String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWYZ1234567890";
+                            StringBuilder salt = new StringBuilder();
+                            Random rnd = new Random();
+                            while (salt.length() < 18) {
+                                int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+                                salt.append(SALTCHARS.charAt(index));
+                            }
+                            String saltStr = salt.toString();
+
+
+                            String state = Environment.getExternalStorageDirectory().toString();
+                            String filename = state + "/" + saltStr + ".gif";
+
+                            File dir = new File(state + "/imageloader");
+                            try {
+                                if (dir.mkdir()) {
+                                    System.out.println("Directory created");
+                                } else {
+                                    System.out.println("Directory is not created");
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                            FileOutputStream out = null;
+                            try {
+                                out = new FileOutputStream(filename);
+                                out.write(bytes);
+                                out.flush();
+                                //result.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+                                // PNG is a lossless format, the compression factor (100) is ignored
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            } finally {
+                                try {
+                                    if (out != null) {
+                                        out.close();
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
                         }
                     }.execute(IMAGE_URLS[position1]);
                 }
@@ -239,86 +284,35 @@ public class ImageGIFPagerFragment extends BaseFragment {
     }
 
     // DownloadImage AsyncTask
-    private class DownloadImage extends AsyncTask<String, Void, Bitmap> {
 
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            Toast.makeText(getContext(),"test",Toast.LENGTH_LONG);
-            Toast.makeText(getContext(),"test1111",Toast.LENGTH_LONG);
-            // Create a progressdialog
-           // mProgressDialog = new ProgressDialog(MainActivity.this);
-            // Set progressdialog title
-           // mProgressDialog.setTitle("Download Image Tutorial");
-            // Set progressdialog message
-            //mProgressDialog.setMessage("Loading...");
-            //mProgressDialog.setIndeterminate(false);
-            // Show progressdialog
-            //mProgressDialog.show();
-        }
-
-        @Override
-        protected Bitmap doInBackground(String... URL) {
-
-            String imageURL = URL[0];
-
-            Bitmap bitmap = null;
-            try {
-                // Download Image from URL
-                InputStream input = new java.net.URL(imageURL).openStream();
-                //Toast.makeText(getContext(),imageURL,Toast.LENGTH_LONG);
-                // Decode Bitmap
-                bitmap = BitmapFactory.decodeStream(input);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return bitmap;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            // Set the bitmap into ImageView
-            //image.setImageBitmap(result);
-            //view.addView(imageLayout, 0);
-            // Close progressdialog
-            // mProgressDialog.dismiss();
-            String state = Environment.getExternalStorageState();
-            String filename="1234";
-            FileOutputStream out = null;
-            try {
-                out = new FileOutputStream(filename);
-                result.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
-
-                // PNG is a lossless format, the compression factor (100) is ignored
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    if (out != null) {
-                        out.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
 
     public class GifDataDownloader extends AsyncTask<String, Void, byte[]> {
         private static final String TAG = "GifDataDownloader";
 
         @Override protected byte[] doInBackground(final String... params) {
             final String gifUrl = params[0];
+            String file = Environment.getDataDirectory().toString();
+            File f = new File(file+"/1234.gif");
 
             if (gifUrl == null)
                 return null;
 
             try {
-                return ByteArrayHttpClient.get(gifUrl);
+                byte[] b = ByteArrayHttpClient.get(gifUrl);
+                FileOutputStream fos = new FileOutputStream(f);
+                fos.write(b);
+                fos.flush();
+                fos.close();
+                return b;
             } catch (OutOfMemoryError e) {
                 Log.e(TAG, "GifDecode OOM: " + gifUrl, e);
                 return null;
+            }
+            catch (IOException e)
+            {
+                Log.e(TAG, "GifDecode OOM: " + gifUrl, e);
+                return null;
+
             }
         }
     }
@@ -342,14 +336,40 @@ public class ImageGIFPagerFragment extends BaseFragment {
 
         @Override
         protected void onPostExecute(byte[] bytes) {
-            super.onPostExecute(bytes);
+            // Set the bitmap into ImageView
+            //image.setImageBitmap(result);
+            //view.addView(imageLayout, 0);
+            // Close progressdialog
+            // mProgressDialog.dismiss();
+            String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWYZ1234567890";
+            StringBuilder salt = new StringBuilder();
+            Random rnd = new Random();
+            while (salt.length() < 18) {
+                int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+                salt.append(SALTCHARS.charAt(index));
+            }
+            String saltStr = salt.toString();
 
-            String filename="1234";
+
+            String state = Environment.getExternalStorageDirectory().toString();
+            String filename = state + "/" + saltStr + ".gif";
+
+            File dir = new File(state + "/imageloader");
+            try {
+                if (dir.mkdir()) {
+                    System.out.println("Directory created");
+                } else {
+                    System.out.println("Directory is not created");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             FileOutputStream out = null;
             try {
                 out = new FileOutputStream(filename);
                 out.write(bytes);
-
+                out.flush();
                 //result.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
                 // PNG is a lossless format, the compression factor (100) is ignored
             } catch (Exception e) {

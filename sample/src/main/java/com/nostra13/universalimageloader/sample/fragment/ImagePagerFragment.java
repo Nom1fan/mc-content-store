@@ -62,59 +62,63 @@ import java.util.Random;
  */
 public class ImagePagerFragment extends BaseFragment {
 
-	public static final int INDEX = 2;
+    public static final int INDEX = 2;
     public String[] IMAGE_URLS;
     ViewPager pager;
     Button button;
     ImageView image;
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View rootView = inflater.inflate(R.layout.fr_image_pager, container, false);
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fr_image_pager, container, false);
 
         MyTask myTask = new MyTask();
 
-		pager = (ViewPager) rootView.findViewById(R.id.pager);
-		myTask.execute();
-		return rootView;
-	}
+        pager = (ViewPager) rootView.findViewById(R.id.pager);
+        myTask.execute();
+        return rootView;
+    }
 
-	private class ImageAdapter extends PagerAdapter {
+    private class ImageAdapter extends PagerAdapter {
 
-	//	private static final String[] IMAGE_URLS = Constants.IMAGES;
+        //	private static final String[] IMAGE_URLS = Constants.IMAGES;
 
-		private LayoutInflater inflater;
-		private DisplayImageOptions options;
+        private LayoutInflater inflater;
+        private DisplayImageOptions options;
 
-		ImageAdapter(Context context) {
-			inflater = LayoutInflater.from(context);
+        ImageAdapter(Context context) {
+            inflater = LayoutInflater.from(context);
 
-			options = new DisplayImageOptions.Builder()
-					.showImageForEmptyUri(R.drawable.ic_empty)
-					.showImageOnFail(R.drawable.ic_error)
-					.resetViewBeforeLoading(true)
-					.cacheOnDisk(true)
-					.imageScaleType(ImageScaleType.EXACTLY)
-					.bitmapConfig(Bitmap.Config.RGB_565)
-					.considerExifParams(true)
-					.displayer(new FadeInBitmapDisplayer(300))
-					.build();
-		}
+            options = new DisplayImageOptions.Builder()
+                    .showImageForEmptyUri(R.drawable.ic_empty)
+                    .showImageOnFail(R.drawable.ic_error)
+                    .resetViewBeforeLoading(true)
+                    .cacheOnDisk(true)
+                    .imageScaleType(ImageScaleType.EXACTLY)
+                    .bitmapConfig(Bitmap.Config.RGB_565)
+                    .considerExifParams(true)
+                    .displayer(new FadeInBitmapDisplayer(300))
+                    .build();
+        }
 
-		@Override
-		public void destroyItem(ViewGroup container, int position, Object object) {
-			container.removeView((View) object);
-		}
-		@Override
-		public int getCount() {
-			return IMAGE_URLS.length;
-		}
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            container.removeView((View) object);
+        }
 
-		@Override
-		public Object instantiateItem(ViewGroup view, int position) {
-			View imageLayout = inflater.inflate(R.layout.item_pager_image, view, false);
-			assert imageLayout != null;
-			ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
-           //final GifImageView imageView =(GifImageView) imageLayout.findViewById(R.id.image);
+        @Override
+        public int getCount() {
+            return IMAGE_URLS.length;
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup view, int position) {
+            View imageLayout = inflater.inflate(R.layout.item_pager_image, view, false);
+            assert imageLayout != null;
+            ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
+            //final GifImageView imageView =(GifImageView) imageLayout.findViewById(R.id.image);
+            //imageView.startAnimation();
+            //final GifImageView imageView =(GifImageView) imageLayout.findViewById(R.id.image);
             //imageView.startAnimation();
 
 //            new GifDataDownloader() {
@@ -126,98 +130,97 @@ public class ImagePagerFragment extends BaseFragment {
 //                }
 //            }.execute(IMAGE_URLS[position]);
 
-			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
+            final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
             button = (Button) imageLayout.findViewById(R.id.button);
-            final String simage=IMAGE_URLS[position];
+            final String simage = IMAGE_URLS[position];
 
 
             ImageLoader.getInstance().displayImage(IMAGE_URLS[position], imageView, options, new SimpleImageLoadingListener() {
-				@Override
-				public void onLoadingStarted(String imageUri, View view) {
-					spinner.setVisibility(View.VISIBLE);
-				}
+                @Override
+                public void onLoadingStarted(String imageUri, View view) {
+                    spinner.setVisibility(View.VISIBLE);
+                }
 
-				@Override
-				public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-					String message = null;
-					switch (failReason.getType()) {
-						case IO_ERROR:
-							message = "Input/Output error";
-							break;
-						case DECODING_ERROR:
-							message = "Image can't be decoded";
-							break;
-						case NETWORK_DENIED:
-							message = "Downloads are denied";
-							break;
-						case OUT_OF_MEMORY:
-							message = "Out Of Memory error";
-							break;
-						case UNKNOWN:
-							message = "Unknown error";
-							break;
-					}
-					Toast.makeText(view.getContext(), message, Toast.LENGTH_SHORT).show();
+                @Override
+                public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+                    String message = null;
+                    switch (failReason.getType()) {
+                        case IO_ERROR:
+                            message = "Input/Output error";
+                            break;
+                        case DECODING_ERROR:
+                            message = "Image can't be decoded";
+                            break;
+                        case NETWORK_DENIED:
+                            message = "Downloads are denied";
+                            break;
+                        case OUT_OF_MEMORY:
+                            message = "Out Of Memory error";
+                            break;
+                        case UNKNOWN:
+                            message = "Unknown error";
+                            break;
+                    }
+                    Toast.makeText(view.getContext(), message, Toast.LENGTH_SHORT).show();
 
-					spinner.setVisibility(View.GONE);
-				}
+                    spinner.setVisibility(View.GONE);
+                }
 
-				@Override
-				public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-					spinner.setVisibility(View.GONE);
-				}
-			});
+                @Override
+                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                    spinner.setVisibility(View.GONE);
+                }
+            });
 
             button.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View arg0) {
 
                     // Execute DownloadImage AsyncTask
                     new DownloadImage().execute(simage);
-                    Toast.makeText(getActivity().getApplication().getApplicationContext(),"this is image",Toast.LENGTH_LONG);
+                    Toast.makeText(getActivity().getApplication().getApplicationContext(), "this is image", Toast.LENGTH_LONG);
                 }
             });
 
-			view.addView(imageLayout, 0);
-			return imageLayout;
+            view.addView(imageLayout, 0);
+            return imageLayout;
 
 
-		}
+        }
 
-		@Override
-		public boolean isViewFromObject(View view, Object object) {
-			return view.equals(object);
-		}
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view.equals(object);
+        }
 
-		@Override
-		public void restoreState(Parcelable state, ClassLoader loader) {
-		}
+        @Override
+        public void restoreState(Parcelable state, ClassLoader loader) {
+        }
 
-		@Override
-		public Parcelable saveState() {
-			return null;
-		}
+        @Override
+        public Parcelable saveState() {
+            return null;
+        }
 
 
-	}
-
+    }
 
     class MyTask extends AsyncTask<Void, Void, ArrayList<String>> {
 
-        ArrayList<String> arr_linkText=new ArrayList<String>();
+        ArrayList<String> arr_linkText = new ArrayList<String>();
 
         @Override
         protected ArrayList<String> doInBackground(Void... params) {
 
             Document doc;
             String linkText = "";
-            String url1="http://server.mediacallz.com/ContentStore/files/Photos/";
+            String url1 = "http://server.mediacallz.com/ContentStore/files/Photos/";
             try {
                 doc = Jsoup.connect(url1).get();
                 //Elements links = doc.select("td.right td a").get();
                 for (Element el : doc.select("td a")) {
                     linkText = el.attr("href");
                     Log.d("filename----", url1 + linkText);
-                    arr_linkText.add(url1+linkText); // add value to ArrayList
+                    arr_linkText.add(url1 + linkText); // add value to ArrayList
                 }
             } catch (IOException e) {
                 // TODO Auto-generated catch block
@@ -230,7 +233,7 @@ public class ImagePagerFragment extends BaseFragment {
         @Override
         protected void onPostExecute(ArrayList<String> result) {
 
-            IMAGE_URLS=arr_linkText.toArray(new String[0]);
+            IMAGE_URLS = arr_linkText.toArray(new String[0]);
             pager.setAdapter(new ImageAdapter(getActivity()));
             pager.setCurrentItem(getArguments().getInt(Constants.Extra.IMAGE_POSITION, 0));
 
@@ -245,12 +248,12 @@ public class ImagePagerFragment extends BaseFragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            Toast.makeText(getContext(),"test",Toast.LENGTH_LONG);
-            Toast.makeText(getContext(),"test1111",Toast.LENGTH_LONG);
+            Toast.makeText(getContext(), "test", Toast.LENGTH_LONG);
+            Toast.makeText(getContext(), "test1111", Toast.LENGTH_LONG);
             // Create a progressdialog
-           // mProgressDialog = new ProgressDialog(MainActivity.this);
+            // mProgressDialog = new ProgressDialog(MainActivity.this);
             // Set progressdialog title
-           // mProgressDialog.setTitle("Download Image Tutorial");
+            // mProgressDialog.setTitle("Download Image Tutorial");
             // Set progressdialog message
             //mProgressDialog.setMessage("Loading...");
             //mProgressDialog.setIndeterminate(false);
@@ -294,16 +297,16 @@ public class ImagePagerFragment extends BaseFragment {
 
 
             String state = Environment.getExternalStorageDirectory().toString();
-            String filename=state+"/"+saltStr+".png";
+            String filename = state + "/" + saltStr + ".png";
 
-            File dir = new File(state+"/imageloader");
-            try{
-                if(dir.mkdir()) {
+            File dir = new File(state + "/imageloader");
+            try {
+                if (dir.mkdir()) {
                     System.out.println("Directory created");
                 } else {
                     System.out.println("Directory is not created");
                 }
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -328,5 +331,7 @@ public class ImagePagerFragment extends BaseFragment {
     }
 
 
-}
+    // DownloadImage AsyncTask
 
+
+}
