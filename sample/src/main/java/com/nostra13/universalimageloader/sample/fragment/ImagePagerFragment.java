@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -172,6 +173,7 @@ public class ImagePagerFragment extends BaseFragment {
 
                     // Execute DownloadImage AsyncTask
                     new DownloadImage().execute(simage);
+                    Toast.makeText(getActivity().getApplication().getApplicationContext(),"this is image",Toast.LENGTH_LONG);
                 }
             });
 
@@ -281,7 +283,30 @@ public class ImagePagerFragment extends BaseFragment {
             //view.addView(imageLayout, 0);
             // Close progressdialog
             // mProgressDialog.dismiss();
-            String filename="1234";
+            String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWYZ1234567890";
+            StringBuilder salt = new StringBuilder();
+            Random rnd = new Random();
+            while (salt.length() < 18) {
+                int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+                salt.append(SALTCHARS.charAt(index));
+            }
+            String saltStr = salt.toString();
+
+
+            String state = Environment.getExternalStorageDirectory().toString();
+            String filename=state+"/"+saltStr+".png";
+
+            File dir = new File(state+"/imageloader");
+            try{
+                if(dir.mkdir()) {
+                    System.out.println("Directory created");
+                } else {
+                    System.out.println("Directory is not created");
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+
             FileOutputStream out = null;
             try {
                 out = new FileOutputStream(filename);
@@ -299,6 +324,7 @@ public class ImagePagerFragment extends BaseFragment {
                 }
             }
         }
+
     }
 
 

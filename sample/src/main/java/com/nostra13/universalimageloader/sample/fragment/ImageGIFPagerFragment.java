@@ -20,6 +20,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -101,7 +102,8 @@ public class ImageGIFPagerFragment extends BaseFragment {
 		}
 
 		@Override
-		public Object instantiateItem(ViewGroup view, int position) {
+		public Object instantiateItem(ViewGroup view, final int position) {
+            final int position1 = position;
 			View imageLayout = inflater.inflate(R.layout.item_pager_image, view, false);
 			assert imageLayout != null;
 			//ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
@@ -163,7 +165,15 @@ public class ImageGIFPagerFragment extends BaseFragment {
                 public void onClick(View arg0) {
 
                     // Execute DownloadImage AsyncTask
-                    new DownloadImage().execute(simage);
+                    //new DownloadImage().execute(simage);
+                    new GifImageDownloader() {
+                        @Override protected void onPostExecute(final byte[] bytes) {
+                            imageView.setBytes(bytes);
+                            imageView.startAnimation();
+                            Log.d("TAG----", "GIF width is " + imageView.getGifWidth());
+                            Log.d("TAG---", "GIF height is " + imageView.getGifHeight());
+                        }
+                    }.execute(IMAGE_URLS[position1]);
                 }
             });
 
@@ -273,11 +283,13 @@ public class ImageGIFPagerFragment extends BaseFragment {
             //view.addView(imageLayout, 0);
             // Close progressdialog
             // mProgressDialog.dismiss();
+            String state = Environment.getExternalStorageState();
             String filename="1234";
             FileOutputStream out = null;
             try {
                 out = new FileOutputStream(filename);
                 result.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+
                 // PNG is a lossless format, the compression factor (100) is ignored
             } catch (Exception e) {
                 e.printStackTrace();
@@ -307,6 +319,49 @@ public class ImageGIFPagerFragment extends BaseFragment {
             } catch (OutOfMemoryError e) {
                 Log.e(TAG, "GifDecode OOM: " + gifUrl, e);
                 return null;
+            }
+        }
+    }
+
+    public class GifImageDownloader extends AsyncTask<String, Void, byte[]> {
+        private static final String TAG = "GifDataDownloader";
+
+        @Override protected byte[] doInBackground(final String... params) {
+            final String gifUrl = params[0];
+
+            if (gifUrl == null)
+                return null;
+
+            try {
+                return ByteArrayHttpClient.get(gifUrl);
+            } catch (OutOfMemoryError e) {
+                Log.e(TAG, "GifDecode OOM: " + gifUrl, e);
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(byte[] bytes) {
+            super.onPostExecute(bytes);
+
+            String filename="1234";
+            FileOutputStream out = null;
+            try {
+                out = new FileOutputStream(filename);
+                out.write(bytes);
+
+                //result.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+                // PNG is a lossless format, the compression factor (100) is ignored
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (out != null) {
+                        out.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

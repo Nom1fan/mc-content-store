@@ -75,7 +75,7 @@ public abstract class AbsListViewBaseFragment extends BaseFragment {
 
 	protected void startImagePagerActivity(int position) {
 		Intent intent = new Intent(getActivity(), SimpleImageActivity.class);
-		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageGIFPagerFragment.INDEX);
+		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImagePagerFragment.INDEX);
 		intent.putExtra(Constants.Extra.IMAGE_POSITION, position);
 		startActivity(intent);
 	}
