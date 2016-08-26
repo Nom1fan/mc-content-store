@@ -18,6 +18,7 @@ package com.nostra13.universalimageloader.sample.activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
 import com.nostra13.universalimageloader.sample.fragment.ImageGIFGridFragment;
@@ -25,6 +26,8 @@ import com.nostra13.universalimageloader.sample.fragment.ImageGIFPagerFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageGalleryFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageGridFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageListFragment;
+import com.nostra13.universalimageloader.sample.fragment.ImageMusicListFragment;
+import com.nostra13.universalimageloader.sample.fragment.ImageMusicPagerFragment_new;
 import com.nostra13.universalimageloader.sample.fragment.ImagePagerFragment;
 import com.nostra13.universalimageloader.sample.fragment.VideoGalleryFragment;
 import com.nostra13.universalimageloader.sample.fragment.VideoPagerFragment;
@@ -32,7 +35,7 @@ import com.nostra13.universalimageloader.sample.fragment.VideoPagerFragment;
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
-public class SimpleImageActivity extends FragmentActivity {
+public class GalleryAndPagersLauncherActivity extends FragmentActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -41,6 +44,8 @@ public class SimpleImageActivity extends FragmentActivity {
 		Fragment fr;
 		String tag;
 		int titleRes;
+
+
 		switch (frIndex) {
 			default:
 			case ImageListFragment.INDEX:
@@ -98,26 +103,66 @@ public class SimpleImageActivity extends FragmentActivity {
 				}
 				titleRes = R.string.ac_name_image_gallery;
 				break;
+
+            case VideoPagerFragment.INDEX:
+                tag = VideoPagerFragment.class.getSimpleName();
+                fr = getSupportFragmentManager().findFragmentByTag(tag);
+                //fr.setUserVisibleHint(true);
+                if (fr == null) {
+                    fr = new VideoPagerFragment();
+                    fr.setArguments(getIntent().getExtras());
+                    fr.isVisible();
+//                    fr.onCreate(savedInstanceState);
+                    //fr.setUserVisibleHint(false);
+                }
+                titleRes = R.string.button_video_gallery;
+                setTitle(titleRes);
+                getSupportFragmentManager().beginTransaction().replace(android.R.id.content, fr, tag).commit();
+                break;
 			case VideoGalleryFragment.INDEX:
 				tag = VideoGalleryFragment.class.getSimpleName();
 				fr = getSupportFragmentManager().findFragmentByTag(tag);
 				if (fr == null) {
 					fr = new VideoGalleryFragment();
+                    //fr.setArguments(getIntent().getExtras());
 				}
 				titleRes = R.string.ac_name_image_gallery;
 				break;
-			case VideoPagerFragment.INDEX:
-				tag = VideoPagerFragment.class.getSimpleName();
-				fr = getSupportFragmentManager().findFragmentByTag(tag);
-				if (fr == null) {
-					fr = new VideoPagerFragment();
-					fr.setArguments(getIntent().getExtras());
-				}
-				titleRes = R.string.ac_name_image_pager;
-				break;
-		}
+            case ImageMusicListFragment.INDEX:
+                tag = ImageMusicListFragment.class.getSimpleName();
+                fr = getSupportFragmentManager().findFragmentByTag(tag);
+                if (fr == null) {
+                    fr = new ImageMusicListFragment();
+                    //fr.setArguments(getIntent().getExtras());
+                }
+                titleRes = R.string.ac_name_image_pager;
+                break;
+            case ImageMusicPagerFragment_new.INDEX:
+                tag = ImageMusicPagerFragment_new.class.getSimpleName();
+                fr = getSupportFragmentManager().findFragmentByTag(tag);
+                if (fr == null) {
+                    fr = new ImageMusicPagerFragment_new();
+                    fr.setArguments(getIntent().getExtras());
+                }
+                titleRes = R.string.ac_name_image_pager;
+                break;
+
+
+        }
 
 		setTitle(titleRes);
 		getSupportFragmentManager().beginTransaction().replace(android.R.id.content, fr, tag).commit();
 	}
+
+    @Override
+    public void onBackPressed() {
+        int count = getFragmentManager().getBackStackEntryCount();
+
+        if (count == 0) {
+            super.onBackPressed();
+            //additional code
+        } else {
+            getFragmentManager().popBackStack();
+        }
+    }
 }

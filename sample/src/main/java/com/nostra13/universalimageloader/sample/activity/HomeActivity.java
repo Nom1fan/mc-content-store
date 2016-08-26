@@ -21,14 +21,13 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
 import com.nostra13.universalimageloader.sample.fragment.ImageGIFGridFragment;
-import com.nostra13.universalimageloader.sample.fragment.ImageGalleryFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageGridFragment;
-import com.nostra13.universalimageloader.sample.fragment.ImageListFragment;
-import com.nostra13.universalimageloader.sample.fragment.ImagePagerFragment;
+import com.nostra13.universalimageloader.sample.fragment.ImageMusicListFragment;
 import com.nostra13.universalimageloader.sample.fragment.VideoGalleryFragment;
 import com.nostra13.universalimageloader.utils.L;
 
@@ -55,46 +54,52 @@ public class HomeActivity extends Activity {
 		}
 	}
 
-	public void onImageListClick(View view) {
-		Intent intent = new Intent(this, SimpleImageActivity.class);
-		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageListFragment.INDEX);
-		startActivity(intent);
-	}
+//	public void onImageListClick(View view) {
+//		Intent intent = new Intent(this, GalleryAndPagersLauncherActivity.class);
+//		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageListFragment.INDEX);
+//		startActivity(intent);
+//	}
 
 	public void onImageGridClick(View view) {
-		Intent intent = new Intent(this, SimpleImageActivity.class);
+		Intent intent = new Intent(this, GalleryAndPagersLauncherActivity.class);
 		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageGridFragment.INDEX);
 		startActivity(intent);
 	}
 
     public void onImageGIFGridClick(View view) {
-        Intent intent = new Intent(this, SimpleImageActivity.class);
+        Intent intent = new Intent(this, GalleryAndPagersLauncherActivity.class);
         intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageGIFGridFragment.INDEX);
         startActivity(intent);
     }
 
-	public void onImagePagerClick(View view) {
-		Intent intent = new Intent(this, SimpleImageActivity.class);
-		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImagePagerFragment.INDEX);
-		startActivity(intent);
-	}
+//	public void onImagePagerClick(View view) {
+//		Intent intent = new Intent(this, GalleryAndPagersLauncherActivity.class);
+//		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImagePagerFragment.INDEX);
+//		startActivity(intent);
+//	}
+//
+//	public void onImageGalleryClick(View view) {
+//		Intent intent = new Intent(this, GalleryAndPagersLauncherActivity.class);
+//		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageGalleryFragment.INDEX);
+//		startActivity(intent);
+//	}
+//
+//	public void onFragmentsClick(View view) {
+//		Intent intent = new Intent(this, ComplexImageActivity.class);
+//		startActivity(intent);
+//	}
 
-	public void onImageGalleryClick(View view) {
-		Intent intent = new Intent(this, SimpleImageActivity.class);
+	public void onVideoGalleryClick(View view){
+		Intent intent = new Intent(this,GalleryAndPagersLauncherActivity.class);
 		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, VideoGalleryFragment.INDEX);
 		startActivity(intent);
 	}
 
-	public void onFragmentsClick(View view) {
-		Intent intent = new Intent(this, ComplexImageActivity.class);
-		startActivity(intent);
-	}
-
-	public void onVideoGalleryClick(View view){
-		Intent intent = new Intent(this,SimpleImageActivity.class);
-		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageGalleryFragment.INDEX);
-		startActivity(intent);
-	}
+    public void onMusicListClick(View view){
+        Intent intent = new Intent(this,GalleryAndPagersLauncherActivity.class);
+        intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageMusicListFragment.INDEX);
+        startActivity(intent);
+    }
 
 	@Override
 	public void onBackPressed() {

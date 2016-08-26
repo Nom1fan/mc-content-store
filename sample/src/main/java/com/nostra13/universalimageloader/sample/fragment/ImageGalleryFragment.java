@@ -18,14 +18,11 @@ package com.nostra13.universalimageloader.sample.fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Gallery;
 import android.widget.ImageView;
@@ -35,61 +32,54 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
-import com.nostra13.universalimageloader.sample.activity.SimpleImageActivity;
+import com.nostra13.universalimageloader.sample.activity.GalleryAndPagersLauncherActivity;
+import com.nostra13.universalimageloader.sample.asynctasks.PopulateUrlsAsyncTask;
+import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateImageFormatBehavior;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import java.util.List;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
-import static com.nostra13.universalimageloader.sample.Constants.grabWordList;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
-public class ImageGalleryFragment extends BaseFragment {
-    public String[] IMAGE_URLS;
-	public static final int INDEX = 3;
+public class ImageGalleryFragment extends BaseFragment implements PopulateUrlsAsyncTask.PostPopulateListener {
+	private List<String> imageUrls;
+    public static final int INDEX = 3;
     public Gallery gallery;
 	@SuppressWarnings("deprecation")
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fr_image_gallery, container, false);
-        MyTask myTask = new MyTask();
 
-         gallery = (Gallery) rootView.findViewById(R.id.gallery);
-        myTask.execute();
+        new PopulateUrlsAsyncTask(new ValidateImageFormatBehavior(), Constants.IMAGE_LIB_URL, this).execute();
+		gallery = (Gallery) rootView.findViewById(R.id.gallery);
+
 		return rootView;
 	}
 
 
 	private void startImagePagerActivity(int position) {
-		Intent intent = new Intent(getActivity(), SimpleImageActivity.class);
+		Intent intent = new Intent(getActivity(), GalleryAndPagersLauncherActivity.class);
 		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImagePagerFragment.INDEX);
-		intent.putExtra(Constants.Extra.IMAGE_POSITION, position);
+		intent.putExtra(Constants.Extra.MEDIA_POSITION, position);
 		startActivity(intent);
 	}
 
-	private class ImageAdapter extends BaseAdapter {
+    @Override
+    public void constructPostPopulate(List<String> urls) {
+        imageUrls = urls;
+        gallery.setAdapter(new ImageAdapter(getActivity()));
+        gallery.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                startImagePagerActivity(position);
+            }
+        });
+    }
 
-	//private static final String[] IMAGE_URLS = Constants.IMAGES;
-
-//        private static String[] IMAGE_URLS;
-
-//        static {
-//
-//                IMAGE_URLS = Constants.IMAGES;
-//
-//        }
-
-
+    private class ImageAdapter extends BaseAdapter {
 
         private LayoutInflater inflater;
-
-
 		private DisplayImageOptions options;
 
 		ImageAdapter(Context context) {
@@ -105,12 +95,11 @@ public class ImageGalleryFragment extends BaseFragment {
 					.bitmapConfig(Bitmap.Config.RGB_565)
 					.displayer(new RoundedBitmapDisplayer(20))
 					.build();
-//            myTask.execute();
 		}
 
 		@Override
 		public int getCount() {
-			return IMAGE_URLS.length;
+			return imageUrls.size();
 		}
 
 		@Override
@@ -129,50 +118,10 @@ public class ImageGalleryFragment extends BaseFragment {
 			if (imageView == null) {
 				imageView = (ImageView) inflater.inflate(R.layout.item_gallery_image, parent, false);
 			}
-			ImageLoader.getInstance().displayImage(IMAGE_URLS[position], imageView, options);
+			ImageLoader.getInstance().displayImage(imageUrls.get(position), imageView, options);
 			return imageView;
 		}
 
 
 	}
-
-class MyTask extends AsyncTask<Void, Void, ArrayList<String>> {
-
-    ArrayList<String> arr_linkText=new ArrayList<String>();
-
-    @Override
-    protected ArrayList<String> doInBackground(Void... params) {
-
-        Document doc;
-        String linkText = "";
-        String url1="http://server.mediacallz.com/ContentStore/files/Photos/";
-        try {
-            doc = Jsoup.connect(url1).get();
-            //Elements links = doc.select("td.right td a").get();
-            for (Element el : doc.select("td a")) {
-                linkText = el.attr("href");
-                Log.d("filename----",url1+linkText);
-                arr_linkText.add(url1+linkText); // add value to ArrayList
-            }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return arr_linkText;     //<< retrun ArrayList from here
-    }
-
-
-    @Override
-    protected void onPostExecute(ArrayList<String> result) {
-
-        IMAGE_URLS=arr_linkText.toArray(new String[0]);
-        gallery.setAdapter(new ImageAdapter(getActivity()));
-        gallery.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                startImagePagerActivity(position);
-            }
-        });
-    }
-    }
 }

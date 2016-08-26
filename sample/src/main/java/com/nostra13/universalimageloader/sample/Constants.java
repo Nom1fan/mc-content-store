@@ -15,53 +15,18 @@
  *******************************************************************************/
 package com.nostra13.universalimageloader.sample;
 
-import android.os.AsyncTask;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.io.IOException;
-import java.util.ArrayList;
-
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
 public final class Constants {
 
-
-
-    public  static String [] grabWordList(String ending) throws IOException, InterruptedException{
-
-        Document doc ;
-        String linkText = "";
-
-        ArrayList<String> arr_linkText=new ArrayList<String>();
-
-        doc = Jsoup.connect("http://server.mediacallz.com/ContentStore/files/Photos/").get();
-        Elements links = doc.getElementsByTag("a");
-        for (Element el : links) {
-            linkText = el.attr("href");
-            arr_linkText.add(linkText); // add value to ArrayList
-        }
-
-        String[] s = arr_linkText.toArray(new String[0]);
-        return s;
-    }
-
-//    public static String[] IMAGES =null;//= Constants.grabWordList("in");
-
-//    public static String[] getImages() throws IOException, InterruptedException {
-//        try {
-//            IMAGES = Constants.grabWordList("in");
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        return IMAGES;
-//    }
+	public static final String STORE_URL = "http://server.mediacallz.com/ContentStore/files/";
+	public static final String IMAGE_LIB_URL = STORE_URL + "Image/";
+    public static final String GIF_LIB_URL = STORE_URL + "Gif/";
+    public static final String AUDIO_LIB_URL = STORE_URL + "Audio/";
+    public static final String AUDIO_THUMBS_URL = STORE_URL + "Audio/Thumbnails/";
+    public static final String VIDEO_LIB_URL = STORE_URL + "Video/";
+    public static final String VIDEO_THUMBS_URL = STORE_URL + "Video/Thumbnails/";
 
 
 	public static final String[] IMAGES = new String[] {
@@ -214,7 +179,7 @@ public final class Constants {
 	
 	public static class Extra {
 		public static final String FRAGMENT_INDEX = "com.nostra13.example.universalimageloader.FRAGMENT_INDEX";
-		public static final String IMAGE_POSITION = "com.nostra13.example.universalimageloader.IMAGE_POSITION";
+		public static final String MEDIA_POSITION = "com.nostra13.example.universalimageloader.MEDIA_POSITION";
 	}
 }
 //class MyTask extends AsyncTask<Void, Void, ArrayList<String>> {

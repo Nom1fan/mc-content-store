@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2011-2014 Sergey Tarasevich
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p/>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,9 +15,9 @@
  *******************************************************************************/
 package com.nostra13.universalimageloader.sample.fragment;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -29,7 +29,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -39,91 +38,110 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+import com.nostra13.universalimageloader.sample.asynctasks.DownloadImageAsyncTask;
+import com.nostra13.universalimageloader.sample.asynctasks.PopulateUrlsAsyncTask;
+import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateImageFormatBehavior;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Random;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
-public class ImageGIFPagerFragment extends BaseFragment {
+public class ImageGIFPagerFragment extends BaseFragment implements PopulateUrlsAsyncTask.PostPopulateListener {
 
-	public static final int INDEX = 7;
-    public String[] IMAGE_URLS;
-    ViewPager pager;
-    Button button;
-    ImageView image;
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View rootView = inflater.inflate(R.layout.fr_image_pager, container, false);
 
-        MyTask myTask = new MyTask();
+    public static final int INDEX = 7;
+    private ViewPager pager;
+    private Button button;
+    private List<String> gifUrls;
 
-		pager = (ViewPager) rootView.findViewById(R.id.pager);
-		myTask.execute();
-		return rootView;
-	}
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fr_image_pager, container, false);
+        pager = (ViewPager) rootView.findViewById(R.id.pager);
 
-	private class ImageAdapter extends PagerAdapter {
+        new PopulateUrlsAsyncTask(new ValidateImageFormatBehavior(), Constants.GIF_LIB_URL, this).execute();
 
-	//	private static final String[] IMAGE_URLS = Constants.IMAGES;
+        return rootView;
+    }
 
-		private LayoutInflater inflater;
-		private DisplayImageOptions options;
+    @Override
+    public void constructPostPopulate(List<String> urls) {
+        gifUrls = urls;
+        pager.setAdapter(new ImageAdapter(getActivity()));
+        pager.setCurrentItem(getArguments().getInt(Constants.Extra.MEDIA_POSITION, 0));
+    }
 
-		ImageAdapter(Context context) {
-			inflater = LayoutInflater.from(context);
+    public class ImageAdapter extends PagerAdapter {
 
-			options = new DisplayImageOptions.Builder()
-					.showImageForEmptyUri(R.drawable.ic_empty)
-					.showImageOnFail(R.drawable.ic_error)
-					.resetViewBeforeLoading(true)
-					.cacheOnDisk(true)
-					.imageScaleType(ImageScaleType.EXACTLY)
-					.bitmapConfig(Bitmap.Config.RGB_565)
-					.considerExifParams(true)
-					.displayer(new FadeInBitmapDisplayer(300))
-					.build();
-		}
+        private LayoutInflater inflater;
+        private DisplayImageOptions options;
 
-		@Override
-		public void destroyItem(ViewGroup container, int position, Object object) {
-			container.removeView((View) object);
-		}
-		@Override
-		public int getCount() {
-			return IMAGE_URLS.length;
-		}
+        ImageAdapter(Context context) {
+            inflater = LayoutInflater.from(context);
 
-		@Override
-		public Object instantiateItem(ViewGroup view, final int position) {
-            final int position1 = position;
-			View imageLayout = inflater.inflate(R.layout.item_pager_image, view, false);
-			assert imageLayout != null;
-			//ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
-           final GifImageView imageView =(GifImageView) imageLayout.findViewById(R.id.image);
+            options = new DisplayImageOptions.Builder()
+                    .showImageForEmptyUri(R.drawable.ic_empty)
+                    .showImageOnFail(R.drawable.ic_error)
+                    .resetViewBeforeLoading(true)
+                    .cacheOnDisk(true)
+                    .imageScaleType(ImageScaleType.EXACTLY)
+                    .bitmapConfig(Bitmap.Config.RGB_565)
+                    .considerExifParams(true)
+                    .displayer(new FadeInBitmapDisplayer(300))
+                    .build();
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            container.removeView((View) object);
+        }
+
+        @Override
+        public int getCount() {
+            return gifUrls.size();
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup view, final int position) {
+            View imageLayout = inflater.inflate(R.layout.item_pager_image, view, false);
+            assert imageLayout != null;
+            //ImageView imageView = (ImageView) videoLayout.findViewById(R.id.image);
+            final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
+            final GifImageView imageView = (GifImageView) imageLayout.findViewById(R.id.image);
             //imageView.startAnimation();
 
+
             new GifDataDownloader() {
-                @Override protected void onPostExecute(final byte[] bytes) {
+                protected void onPreExecute() {
+                    super.onPreExecute();
+                    spinner.setVisibility(View.VISIBLE);
+                    //progressDialog = ProgressDialog.show(getContext(),"wait","");
+                    // progressDialog.setMessage("Loading...");
+                    //progressDialog.show();
+                }
+
+                @Override
+                protected void onPostExecute(byte[] bytes) {
+                    super.onPostExecute(bytes);
+                    spinner.setVisibility(View.GONE);
                     imageView.setBytes(bytes);
                     imageView.startAnimation();
                     Log.d("TAG----", "GIF width is " + imageView.getGifWidth());
                     Log.d("TAG---", "GIF height is " + imageView.getGifHeight());
+                    spinner.setVisibility(View.GONE);
+                    //progressDialog.dismiss();
                 }
-            }.execute(IMAGE_URLS[position]);
+            }.execute(gifUrls.get(position));
 
-			final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
+            //spinner.setVisibility(View.GONE);
+            //final ProgressBar spinner = (ProgressBar) videoLayout.findViewById(R.id.loading);
             button = (Button) imageLayout.findViewById(R.id.button);
-            final String simage=IMAGE_URLS[position];
 
 
 //            ImageLoader.getInstance().displayImage(IMAGE_URLS[position], imageView, options, new SimpleImageLoadingListener() {
@@ -166,213 +184,115 @@ public class ImageGIFPagerFragment extends BaseFragment {
             button.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View arg0) {
 
-                    // Execute DownloadImage AsyncTask
-                    //new DownloadImage().execute(simage);
-                    new GifImageDownloader() {
-                        protected void onPostExecute(byte[] bytes) {
-                            // Set the bitmap into ImageView
-                            //image.setImageBitmap(result);
-                            //view.addView(imageLayout, 0);
-                            // Close progressdialog
-                            // mProgressDialog.dismiss();
-                            String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWYZ1234567890";
-                            StringBuilder salt = new StringBuilder();
-                            Random rnd = new Random();
-                            while (salt.length() < 18) {
-                                int index = (int) (rnd.nextFloat() * SALTCHARS.length());
-                                salt.append(SALTCHARS.charAt(index));
-                            }
-                            String saltStr = salt.toString();
+                    // Execute DownloadImageAsyncTask AsyncTask
+                    //new DownloadImageAsyncTask().execute(simage);
+                    new DownloadImageAsyncTask(getActivity()).execute(gifUrls.get(position));
+                    String path1 = Environment.getExternalStorageDirectory().toString();
+                    path1 = path1 + "/imageloader";
 
+                    Toast.makeText(getActivity().getApplication().getBaseContext(), "The file is downloaded at " + path1, Toast.LENGTH_LONG).show();
 
-                            String state = Environment.getExternalStorageDirectory().toString();
-                            String filename = state + "/" + saltStr + ".gif";
-
-                            File dir = new File(state + "/imageloader");
-                            try {
-                                if (dir.mkdir()) {
-                                    System.out.println("Directory created");
-                                } else {
-                                    System.out.println("Directory is not created");
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-
-                            FileOutputStream out = null;
-                            try {
-                                out = new FileOutputStream(filename);
-                                out.write(bytes);
-                                out.flush();
-                                //result.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
-                                // PNG is a lossless format, the compression factor (100) is ignored
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            } finally {
-                                try {
-                                    if (out != null) {
-                                        out.close();
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                    }.execute(IMAGE_URLS[position1]);
                 }
             });
 
-			view.addView(imageLayout, 0);
-			return imageLayout;
-
-
-		}
-
-		@Override
-		public boolean isViewFromObject(View view, Object object) {
-			return view.equals(object);
-		}
-
-		@Override
-		public void restoreState(Parcelable state, ClassLoader loader) {
-		}
-
-		@Override
-		public Parcelable saveState() {
-			return null;
-		}
-
-
-	}
-
-
-    class MyTask extends AsyncTask<Void, Void, ArrayList<String>> {
-
-        ArrayList<String> arr_linkText=new ArrayList<String>();
-
-        @Override
-        protected ArrayList<String> doInBackground(Void... params) {
-
-            Document doc;
-            String linkText = "";
-            String url1="http://server.mediacallz.com/ContentStore/files/Gif/";
-            try {
-                doc = Jsoup.connect(url1).get();
-                //Elements links = doc.select("td.right td a").get();
-                for (Element el : doc.select("td a")) {
-                    linkText = el.attr("href");
-                    Log.d("filename----", url1 + linkText);
-                    arr_linkText.add(url1+linkText); // add value to ArrayList
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return arr_linkText;     //<< retrun ArrayList from here
-        }
-
-
-        @Override
-        protected void onPostExecute(ArrayList<String> result) {
-
-            IMAGE_URLS=arr_linkText.toArray(new String[0]);
-            pager.setAdapter(new ImageAdapter(getActivity()));
-            pager.setCurrentItem(getArguments().getInt(Constants.Extra.IMAGE_POSITION, 0));
+            view.addView(imageLayout, 0);
+            return imageLayout;
 
 
         }
+
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view.equals(object);
+        }
+
+        @Override
+        public void restoreState(Parcelable state, ClassLoader loader) {
+        }
+
+        @Override
+        public Parcelable saveState() {
+            return null;
+        }
+
+
     }
 
-    // DownloadImage AsyncTask
+}
+
+// DownloadImageAsyncTask AsyncTask
 
 
-    public class GifDataDownloader extends AsyncTask<String, Void, byte[]> {
-        private static final String TAG = "GifDataDownloader";
+ class GifDataDownloader extends AsyncTask<String, Void, byte[]> {
+    private static final String TAG = "GifDataDownloader";
+    ProgressDialog pdia = null;
 
-        @Override protected byte[] doInBackground(final String... params) {
-            final String gifUrl = params[0];
-
-            if (gifUrl == null)
-                return null;
-
-            try {
-                byte[] b = ByteArrayHttpClient.get(gifUrl);
-                return b;
-            } catch (OutOfMemoryError e) {
-                Log.e(TAG, "GifDecode OOM: " + gifUrl, e);
-                return null;
-            }
-
-        }
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        // spinner.setVisibility(View.VISIBLE);
+        //progressDialog = ProgressDialog.show(getContext(),"wait","");
+        // progressDialog.setMessage("Loading...");
+        //progressDialog.show();
     }
 
-    public class GifImageDownloader extends AsyncTask<String, Void, byte[]> {
-        private static final String TAG = "GifDataDownloader";
+    @Override
+    protected byte[] doInBackground(final String... params) {
+        final String gifUrl = params[0];
 
-        @Override protected byte[] doInBackground(final String... params) {
-            final String gifUrl = params[0];
+        if (gifUrl == null)
+            return null;
 
-            if (gifUrl == null)
-                return null;
-
-            try {
-                return ByteArrayHttpClient.get(gifUrl);
-            } catch (OutOfMemoryError e) {
-                Log.e(TAG, "GifDecode OOM: " + gifUrl, e);
-                return null;
-            }
+        try {
+            byte[] b = ByteArrayHttpClient.get(gifUrl);
+            //spinner.setVisibility(View.GONE);
+            return b;
+        } catch (OutOfMemoryError e) {
+            Log.e(TAG, "GifDecode OOM: " + gifUrl, e);
+            return null;
         }
 
-        @Override
-        protected void onPostExecute(byte[] bytes) {
-            // Set the bitmap into ImageView
-            //image.setImageBitmap(result);
-            //view.addView(imageLayout, 0);
-            // Close progressdialog
-            // mProgressDialog.dismiss();
-            String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWYZ1234567890";
-            StringBuilder salt = new StringBuilder();
-            Random rnd = new Random();
-            while (salt.length() < 18) {
-                int index = (int) (rnd.nextFloat() * SALTCHARS.length());
-                salt.append(SALTCHARS.charAt(index));
+    }
+
+
+    @Override
+    protected void onPostExecute(byte[] bytes) {
+        super.onPostExecute(bytes);
+        //          progressDialog.dismiss();
+
+    }
+
+    public void DownloadFile(String fileURL, String fileName) {
+        try {
+            String RootDir = Environment.getExternalStorageDirectory()
+                    + File.separator + "ImageLoader" + File.separator + "GIF";
+            File RootFile = new File(RootDir);
+            File RootFile1 = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+
+            RootFile.mkdir();
+            // File root = Environment.getExternalStorageDirectory();
+            URL u = new URL(fileURL);
+            HttpURLConnection c = (HttpURLConnection) u.openConnection();
+            c.setRequestMethod("GET");
+            c.setDoOutput(true);
+            c.connect();
+            FileOutputStream f = new FileOutputStream(new File(RootFile1,
+                    fileName));
+            InputStream in = c.getInputStream();
+            byte[] buffer = new byte[1024];
+            int len1 = 0;
+
+            while ((len1 = in.read(buffer)) > 0) {
+                f.write(buffer, 0, len1);
             }
-            String saltStr = salt.toString();
+            f.close();
 
 
-            String state = Environment.getExternalStorageDirectory().toString();
-            String filename = state + "/" + saltStr + ".gif";
+        } catch (Exception e) {
 
-            File dir = new File(state + "/imageloader");
-            try {
-                if (dir.mkdir()) {
-                    System.out.println("Directory created");
-                } else {
-                    System.out.println("Directory is not created");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            FileOutputStream out = null;
-            try {
-                out = new FileOutputStream(filename);
-                out.write(bytes);
-                out.flush();
-                //result.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
-                // PNG is a lossless format, the compression factor (100) is ignored
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    if (out != null) {
-                        out.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            Log.d("Error....", e.toString());
         }
+
     }
 }
 

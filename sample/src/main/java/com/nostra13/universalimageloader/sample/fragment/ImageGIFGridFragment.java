@@ -17,53 +17,55 @@ package com.nostra13.universalimageloader.sample.fragment;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.felipecsl.gifimageview.library.GifImageView;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
+import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
+import com.nostra13.universalimageloader.sample.asynctasks.PopulateUrlsAsyncTask;
+import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateImageFormatBehavior;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
-public class ImageGIFGridFragment extends AbsListViewBaseFragment {
+public class ImageGIFGridFragment extends AbsListViewBaseFragment implements PopulateUrlsAsyncTask.PostPopulateListener {
 
 	public static final int INDEX = 8;
-    public String[] IMAGE_URLS;
+	private List<String> imageUrls;
 
-    @Override
+	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fr_image_grid, container, false);
-        MyTask myTask = new MyTask();
+
 		listView = (GridView) rootView.findViewById(R.id.grid);
-        myTask.execute();
+		new PopulateUrlsAsyncTask(new ValidateImageFormatBehavior(), Constants.GIF_LIB_URL, this).execute();
 		return rootView;
+	}
+
+	@Override
+	public void constructPostPopulate(List<String> urls) {
+		imageUrls = urls;
+		listView.setAdapter(new ImageAdapter(getActivity()));
+		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				startGIFImagePagerActivity(position);
+			}
+		});
 	}
 
 	private class ImageAdapter extends BaseAdapter {
@@ -90,7 +92,7 @@ public class ImageGIFGridFragment extends AbsListViewBaseFragment {
 
 		@Override
 		public int getCount() {
-			return IMAGE_URLS.length;
+			return imageUrls.size();
 		}
 
 		@Override
@@ -119,7 +121,7 @@ public class ImageGIFGridFragment extends AbsListViewBaseFragment {
 			}
 
 			ImageLoader.getInstance()
-					.displayImage(IMAGE_URLS[position], holder.imageView, options, new SimpleImageLoadingListener() {
+					.displayImage(imageUrls.get(position), holder.imageView, options, new SimpleImageLoadingListener() {
 						@Override
 						public void onLoadingStarted(String imageUri, View view) {
 							holder.progressBar.setProgress(0);
@@ -152,51 +154,6 @@ public class ImageGIFGridFragment extends AbsListViewBaseFragment {
         //GifImageView imageView;
 		ProgressBar progressBar;
 	}
-
-
-
-
-    class MyTask extends AsyncTask<Void, Void, ArrayList<String>> {
-
-        ArrayList<String> arr_linkText=new ArrayList<String>();
-
-        @Override
-        protected ArrayList<String> doInBackground(Void... params) {
-
-            Document doc;
-            String linkText = "";
-            String url1="http://server.mediacallz.com/ContentStore/files/Gif/";
-            try {
-                doc = Jsoup.connect(url1).get();
-                //Elements links = doc.select("td.right td a").get();
-                for (Element el : doc.select("td a")) {
-                    linkText = el.attr("href");
-                    Log.d("filename----", url1 + linkText);
-                    arr_linkText.add(url1+linkText); // add value to ArrayList
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return arr_linkText;     //<< retrun ArrayList from here
-        }
-
-
-        @Override
-        protected void onPostExecute(ArrayList<String> result) {
-
-            IMAGE_URLS=arr_linkText.toArray(new String[0]);
-            ((GridView) listView).setAdapter(new ImageAdapter(getActivity()));
-            listView.setOnItemClickListener(new OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    startGIFImagePagerActivity(position);
-                }
-            });
-
-
-        }
-    }
 
 //    public class GifDataDownloader extends AsyncTask<String, Void, byte[]> {
 //        private static final String TAG = "GifDataDownloader";

@@ -23,7 +23,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
-import com.nostra13.universalimageloader.sample.activity.SimpleImageActivity;
+import com.nostra13.universalimageloader.sample.activity.GalleryAndPagersLauncherActivity;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -74,16 +74,32 @@ public abstract class AbsListViewBaseFragment extends BaseFragment {
 	}
 
 	protected void startImagePagerActivity(int position) {
-		Intent intent = new Intent(getActivity(), SimpleImageActivity.class);
+		Intent intent = new Intent(getActivity(), GalleryAndPagersLauncherActivity.class);
 		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImagePagerFragment.INDEX);
-		intent.putExtra(Constants.Extra.IMAGE_POSITION, position);
+		intent.putExtra(Constants.Extra.MEDIA_POSITION, position);
 		startActivity(intent);
 	}
 
     protected void startGIFImagePagerActivity(int position) {
-        Intent intent = new Intent(getActivity(), SimpleImageActivity.class);
+        Intent intent = new Intent(getActivity(), GalleryAndPagersLauncherActivity.class);
         intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageGIFPagerFragment.INDEX);
-        intent.putExtra(Constants.Extra.IMAGE_POSITION, position);
+        intent.putExtra(Constants.Extra.MEDIA_POSITION, position);
+        startActivity(intent);
+    }
+
+
+    protected void startVideoPagerActivity(int position) {
+        Intent intent = new Intent(getActivity(), GalleryAndPagersLauncherActivity.class);
+        intent.putExtra(Constants.Extra.FRAGMENT_INDEX, VideoPagerFragment.INDEX);
+        intent.putExtra(Constants.Extra.MEDIA_POSITION, position);
+        startActivity(intent);
+    }
+
+
+    protected void startAudioPagerActivity(int position) {
+        Intent intent = new Intent(getActivity(), GalleryAndPagersLauncherActivity.class);
+        intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageMusicPagerFragment_new.INDEX);
+        intent.putExtra(Constants.Extra.MEDIA_POSITION, position);
         startActivity(intent);
     }
 	private void applyScrollListener() {

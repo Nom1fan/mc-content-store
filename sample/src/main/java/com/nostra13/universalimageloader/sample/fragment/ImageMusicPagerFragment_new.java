@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2011-2014 Sergey Tarasevich
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p/>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,18 +17,24 @@ package com.nostra13.universalimageloader.sample.fragment;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.MediaController;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -38,43 +44,100 @@ import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
-import com.nostra13.universalimageloader.sample.asynctasks.DownloadImageAsyncTask;
-import com.nostra13.universalimageloader.sample.asynctasks.PopulateUrlsAsyncTask;
+import com.nostra13.universalimageloader.sample.asynctasks.PopulateMultipleUrlsListsAsyncTask;
+import com.nostra13.universalimageloader.sample.behaviors.validate.ValidateAudioFormatBehavior;
 import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateImageFormatBehavior;
+import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateMediaFormatBehavior;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
-public class ImagePagerFragment extends BaseFragment implements PopulateUrlsAsyncTask.PostPopulateListener {
+public class ImageMusicPagerFragment_new extends BaseFragment implements PopulateMultipleUrlsListsAsyncTask.PostMultiPopulateListener {
 
+    public static final int INDEX = 1234;
     private static final String TAG = ImagePagerFragment.class.getSimpleName();
-    public static final int INDEX = 2;
-    private List<String> imageUrls;
+    private List<String> audioUrls;
     private ViewPager pager;
     private Button button;
+    private MediaController mediacontroller;
+    private VideoView videoView;
+    private List<String> thumbsUrls;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fr_image_pager, container, false);
-
+        mediacontroller = new MediaController(getActivity());
+        mediacontroller.setAnchorView(videoView);
         pager = (ViewPager) rootView.findViewById(R.id.pager);
-        new PopulateUrlsAsyncTask(new ValidateImageFormatBehavior(), Constants.IMAGE_LIB_URL, this).execute();
+
+
+        List<ValidateMediaFormatBehavior> validateMediaFormatBehaviors = new LinkedList<>();
+        validateMediaFormatBehaviors.add(new ValidateImageFormatBehavior());
+        validateMediaFormatBehaviors.add(new ValidateAudioFormatBehavior());
+
+        List<String> urlsToScan = new LinkedList<String>() {{
+            add(Constants.AUDIO_THUMBS_URL);
+            add(Constants.AUDIO_LIB_URL);
+        }};
+        new PopulateMultipleUrlsListsAsyncTask(validateMediaFormatBehaviors, urlsToScan, this).execute();
+
 
         return rootView;
     }
 
     @Override
-    public void constructPostPopulate(List<String> urls) {
-        imageUrls = urls;
+    public void constructPostPopulate(List<List<String>> listList) {
+
+        thumbsUrls = listList.get(0);
+        audioUrls = listList.get(1);
+
         pager.setAdapter(new ImageAdapter(getActivity()));
         pager.setCurrentItem(getArguments().getInt(Constants.Extra.MEDIA_POSITION, 0));
+        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                playAudioInPage(position);
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                playAudioInPage(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+    }
+
+    private void playAudioInPage(int position) {
+        try {
+            Uri videoUri = Uri.parse(audioUrls.get(position));
+            mediacontroller.setVisibility(View.VISIBLE);
+            videoView.setMediaController(mediacontroller);
+            videoView.setVideoURI(videoUri);
+            videoView.setZOrderOnTop(false);
+            videoView.setVisibility(View.VISIBLE);
+            videoView.requestFocus();
+            videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    videoView.setBackgroundColor(Color.TRANSPARENT);
+                    videoView.start();
+                }
+            });
+
+        } catch (Exception e) {
+            Log.e("Error streaming video", e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private class ImageAdapter extends PagerAdapter {
-
-        //	private static final String[] IMAGE_URLS = Constants.IMAGES;
 
         private LayoutInflater inflater;
         private DisplayImageOptions options;
@@ -101,34 +164,20 @@ public class ImagePagerFragment extends BaseFragment implements PopulateUrlsAsyn
 
         @Override
         public int getCount() {
-            return imageUrls.size();
+            return thumbsUrls.size();
         }
 
         @Override
         public Object instantiateItem(ViewGroup view, int position) {
-            View imageLayout = inflater.inflate(R.layout.item_pager_image, view, false);
-            assert imageLayout != null;
-            ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
-            //final GifImageView imageView =(GifImageView) videoLayout.findViewById(R.id.image);
-            //imageView.startAnimation();
-            //final GifImageView imageView =(GifImageView) videoLayout.findViewById(R.id.image);
-            //imageView.startAnimation();
+            View audioLayout = inflater.inflate(R.layout.item_audio_pager_new, view, false);
+            assert audioLayout != null;
+            ImageView imageView = (ImageView) audioLayout.findViewById(R.id.audioimage);
+            videoView = (VideoView) audioLayout.findViewById(R.id.videoView);
 
-//            new GifDataDownloader() {
-//                @Override protected void onPostExecute(final byte[] bytes) {
-//                    imageView.setBytes(bytes);
-//                    imageView.startAnimation();
-//                    Log.d("TAG----", "GIF width is " + imageView.getGifWidth());
-//                    Log.d("TAG---", "GIF height is " + imageView.getGifHeight());
-//                }
-//            }.execute(IMAGE_URLS[position]);
+            final ProgressBar spinner = (ProgressBar) audioLayout.findViewById(R.id.loading);
+            button = (Button) audioLayout.findViewById(R.id.button);
 
-            final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
-            button = (Button) imageLayout.findViewById(R.id.button);
-            final String simage = imageUrls.get(position);
-
-
-            ImageLoader.getInstance().displayImage(imageUrls.get(position), imageView, options, new SimpleImageLoadingListener() {
+            ImageLoader.getInstance().displayImage(thumbsUrls.get(position), imageView, options, new SimpleImageLoadingListener() {
                 @Override
                 public void onLoadingStarted(String imageUri, View view) {
                     spinner.setVisibility(View.VISIBLE);
@@ -169,9 +218,9 @@ public class ImagePagerFragment extends BaseFragment implements PopulateUrlsAsyn
                 public void onClick(View arg0) {
 
                     // Execute DownloadImageAsyncTask AsyncTask
-                    new DownloadImageAsyncTask(getActivity()).execute(simage);
+                    //new DownloadImageAsyncTask(getActivity()).execute(simage);
                     //String path1= Environment.getExternalStorageDirectory().toString();
-                    String path1=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath();
+                    String path1 = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath();
                     //path1=path1+"/imageloader";
 
                     Toast.makeText(getActivity().getApplication().getBaseContext(), "The file is downloaded at " + path1, Toast.LENGTH_LONG).show();
@@ -179,8 +228,8 @@ public class ImagePagerFragment extends BaseFragment implements PopulateUrlsAsyn
                 }
             });
 
-            view.addView(imageLayout, 0);
-            return imageLayout;
+            view.addView(audioLayout, 0);
+            return audioLayout;
         }
 
         @Override
@@ -196,7 +245,6 @@ public class ImagePagerFragment extends BaseFragment implements PopulateUrlsAsyn
         public Parcelable saveState() {
             return null;
         }
-
 
     }
 }

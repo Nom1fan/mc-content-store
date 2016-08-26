@@ -18,14 +18,11 @@ package com.nostra13.universalimageloader.sample.fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -39,13 +36,9 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
+import com.nostra13.universalimageloader.sample.asynctasks.PopulateUrlsAsyncTask;
+import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateImageFormatBehavior;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,19 +46,17 @@ import java.util.List;
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
-public class ImageListFragment extends AbsListViewBaseFragment {
+public class ImageListFragment extends AbsListViewBaseFragment implements PopulateUrlsAsyncTask.PostPopulateListener {
 
 	public static final int INDEX = 0;
-    public String[] IMAGE_URLS;
+	private List<String> imageUrls;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fr_image_list, container, false);
 
-        MyTask myTask = new MyTask();
-
 		listView = (ListView) rootView.findViewById(android.R.id.list);
-        myTask.execute();
+		new PopulateUrlsAsyncTask(new ValidateImageFormatBehavior(), Constants.IMAGE_LIB_URL, this).execute();
 	return rootView;
 	}
 
@@ -73,6 +64,18 @@ public class ImageListFragment extends AbsListViewBaseFragment {
 	public void onDestroy() {
 		super.onDestroy();
 		AnimateFirstDisplayListener.displayedImages.clear();
+	}
+
+	@Override
+	public void constructPostPopulate(List<String> urls) {
+		imageUrls = urls;
+		listView.setAdapter(new ImageAdapter(getActivity()));
+		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				startImagePagerActivity(position);
+			}
+		});
 	}
 
 	private class ImageAdapter extends BaseAdapter {
@@ -106,7 +109,7 @@ public class ImageListFragment extends AbsListViewBaseFragment {
 
 		@Override
 		public int getCount() {
-			return IMAGE_URLS.length;
+			return imageUrls.size();
 		}
 
 		@Override
@@ -135,7 +138,7 @@ public class ImageListFragment extends AbsListViewBaseFragment {
 
 			holder.text.setText("Item " + (position + 1));
 
-			ImageLoader.getInstance().displayImage(IMAGE_URLS[position], holder.image, options, animateFirstListener);
+			ImageLoader.getInstance().displayImage(imageUrls.get(position), holder.image, options, animateFirstListener);
 
 			return view;
 		}
@@ -162,47 +165,4 @@ public class ImageListFragment extends AbsListViewBaseFragment {
 			}
 		}
 	}
-
-
-    class MyTask extends AsyncTask<Void, Void, ArrayList<String>> {
-
-        ArrayList<String> arr_linkText=new ArrayList<String>();
-
-        @Override
-        protected ArrayList<String> doInBackground(Void... params) {
-
-            Document doc;
-            String linkText = "";
-            String url1="http://server.mediacallz.com/ContentStore/files/Photos/";
-            try {
-                doc = Jsoup.connect(url1).get();
-                //Elements links = doc.select("td.right td a").get();
-                for (Element el : doc.select("td a")) {
-                    linkText = el.attr("href");
-                    Log.d("filename----", url1 + linkText);
-                    arr_linkText.add(url1+linkText); // add value to ArrayList
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return arr_linkText;     //<< retrun ArrayList from here
-        }
-
-
-        @Override
-        protected void onPostExecute(ArrayList<String> result) {
-
-            IMAGE_URLS=arr_linkText.toArray(new String[0]);
-            ((ListView) listView).setAdapter(new ImageAdapter(getActivity()));
-            listView.setOnItemClickListener(new OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    startImagePagerActivity(position);
-                }
-            });
-
-        }
-    }
-
 }

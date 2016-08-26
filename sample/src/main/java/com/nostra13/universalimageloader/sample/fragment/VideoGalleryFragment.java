@@ -1,14 +1,8 @@
 package com.nostra13.universalimageloader.sample.fragment;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
-import android.media.MediaMetadataRetriever;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,37 +19,43 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingProgressListe
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
-import com.nostra13.universalimageloader.sample.activity.SimpleImageActivity;
+import com.nostra13.universalimageloader.sample.asynctasks.PopulateUrlsAsyncTask;
+import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateImageFormatBehavior;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by maitray on 9/8/16.
  */
-public class VideoGalleryFragment extends AbsListViewBaseFragment {
+public class VideoGalleryFragment extends AbsListViewBaseFragment implements PopulateUrlsAsyncTask.PostPopulateListener {
     public static final int INDEX = 6;
-    public String[] IMAGE_URLS;
-    public Bitmap[] bitmapslist;
-    public ProgressDialog pdia;
+//    public Bitmap[] bitmapslist;
+//    public ProgressDialog progressDialog;
+    private List<String> videoThumbsUrl;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fr_image_grid, container, false);
-        MyTask myTask = new MyTask();
         listView = (GridView) rootView.findViewById(R.id.grid);
-        myTask.execute();
+
+        new PopulateUrlsAsyncTask(new ValidateImageFormatBehavior(), Constants.VIDEO_THUMBS_URL, this).execute();
+
         return rootView;
     }
 
-    private class ImageAdapter extends BaseAdapter {
+    @Override
+    public void constructPostPopulate(List<String> urls) {
+        videoThumbsUrl = urls;
+        listView.setAdapter(new ImageAdapter(getActivity()));
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                startVideoPagerActivity(position);
+            }
+        });
+    }
 
-        //private static final String[] IMAGE_URLS = Constants.IMAGES;
+    private class ImageAdapter extends BaseAdapter {
 
         private LayoutInflater inflater;
 
@@ -77,7 +77,7 @@ public class VideoGalleryFragment extends AbsListViewBaseFragment {
 
         @Override
         public int getCount() {
-            return IMAGE_URLS.length;
+            return videoThumbsUrl.size();
         }
 
         @Override
@@ -106,7 +106,7 @@ public class VideoGalleryFragment extends AbsListViewBaseFragment {
             }
 
             ImageLoader.getInstance()
-                    .displayImage(IMAGE_URLS[position],bitmapslist[position],holder.imageView, options, new SimpleImageLoadingListener() {
+                    .displayImage(videoThumbsUrl.get(position), holder.imageView, options, new SimpleImageLoadingListener() {
                         @Override
                         public void onLoadingStarted(String imageUri, View view) {
                             holder.progressBar.setProgress(0);
@@ -138,111 +138,64 @@ public class VideoGalleryFragment extends AbsListViewBaseFragment {
         ProgressBar progressBar;
     }
 
-    class MyTask extends AsyncTask<Void, Void, ArrayList<String>> {
-
-        ArrayList<String> arr_linkText=new ArrayList<String>();
-
-        @Override
-        protected ArrayList<String> doInBackground(Void... params) {
-
-            Document doc;
-            String linkText = "";
-            String url1="http://server.mediacallz.com/ContentStore/files/videos/";
-            try {
-                doc = Jsoup.connect(url1).get();
-                //Elements links = doc.select("td.right td a").get();
-                for (Element el : doc.select("td a")) {
-                    linkText = el.attr("href");
-                    Log.d("filename----", url1 + linkText);
-                    arr_linkText.add(url1+linkText); // add value to ArrayList
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return arr_linkText;     //<< retrun ArrayList from here
-        }
-
-
-        @Override
-        protected void onPostExecute(ArrayList<String> result) {
-
-            IMAGE_URLS=arr_linkText.toArray(new String[0]);
-            GeneratePreviewTask generatePreviewTask = new GeneratePreviewTask();
-            generatePreviewTask.execute(IMAGE_URLS);
-//            ((GridView) listView).setAdapter(new ImageAdapter(getActivity()));
+//    class GenerateVideoThumbnailsFromUrlsAsyncTask extends AsyncTask<String, Void, ArrayList<Bitmap>> {
+//        @Override
+//        protected void onPreExecute(){
+//            super.onPreExecute();
+//            progressDialog = new ProgressDialog(getContext());
+//            progressDialog.setMessage("Getting First Frame Of Videos...");
+//            progressDialog.show();
+//        }
+//
+//        @Override
+//        protected ArrayList<Bitmap> doInBackground(String... params) {
+//            ArrayList<Bitmap> bitmaps = new ArrayList<>();
+//            for(String videoThumbsUrl : params){
+//                Bitmap bitmap = null;
+//                MediaMetadataRetriever mediaMetadataRetriever = null;
+//                try
+//                {
+//                    mediaMetadataRetriever = new MediaMetadataRetriever();
+//                    if (Build.VERSION.SDK_INT >= 14)
+//                        mediaMetadataRetriever.setDataSource(videoThumbsUrl, new HashMap<String, String>());
+//                    else
+//                        mediaMetadataRetriever.setDataSource(videoThumbsUrl);
+//                    //   mediaMetadataRetriever.setDataSource(videoPath);
+//                    bitmap = mediaMetadataRetriever.getFrameAtTime();
+//                }
+//                catch (Exception e)
+//                {
+//                    e.printStackTrace();
+//                }
+//                finally
+//                {
+//                    if (mediaMetadataRetriever != null)
+//                    {
+//                        mediaMetadataRetriever.release();
+//                    }
+//                }
+//                bitmaps.add(bitmap);
+//            }
+//            return bitmaps;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(ArrayList<Bitmap> result) {
+//
+//            bitmapslist=result.toArray(new Bitmap[0]);
+//
+//            listView.setAdapter(new ViewAdapter(getActivity()));
 //            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 //                @Override
 //                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                    Intent intent = new Intent(getActivity(), SimpleImageActivity.class);
+//                    Intent intent = new Intent(getActivity(), GalleryAndPagersLauncherActivity.class);
 //                    intent.putExtra(Constants.Extra.FRAGMENT_INDEX, VideoPagerFragment.INDEX);
-//                    intent.putExtra(Constants.Extra.IMAGE_POSITION, position);
+//                    intent.putExtra(Constants.Extra.MEDIA_POSITION, position);
 //                    startActivity(intent);
 //                }
 //            });
-
-
-        }
-    }
-
-    class GeneratePreviewTask extends AsyncTask<String, Void, ArrayList<Bitmap>>{
-        @Override
-        protected void onPreExecute(){
-            super.onPreExecute();
-            pdia = new ProgressDialog(getContext());
-            pdia.setMessage("Loading...");
-            pdia.show();
-        }
-
-        @Override
-        protected ArrayList<Bitmap> doInBackground(String... params) {
-            ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
-            for(String url : params){
-                Bitmap bitmap = null;
-                MediaMetadataRetriever mediaMetadataRetriever = null;
-                try
-                {
-                    mediaMetadataRetriever = new MediaMetadataRetriever();
-                    if (Build.VERSION.SDK_INT >= 14)
-                        mediaMetadataRetriever.setDataSource(url, new HashMap<String, String>());
-                    else
-                        mediaMetadataRetriever.setDataSource(url);
-                    //   mediaMetadataRetriever.setDataSource(videoPath);
-                    bitmap = mediaMetadataRetriever.getFrameAtTime();
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-                finally
-                {
-                    if (mediaMetadataRetriever != null)
-                    {
-                        mediaMetadataRetriever.release();
-                    }
-                }
-                bitmaps.add(bitmap);
-            }
-            return bitmaps;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<Bitmap> result) {
-
-            bitmapslist=result.toArray(new Bitmap[0]);
-
-            ((GridView) listView).setAdapter(new ImageAdapter(getActivity()));
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Intent intent = new Intent(getActivity(), SimpleImageActivity.class);
-                    intent.putExtra(Constants.Extra.FRAGMENT_INDEX, VideoPagerFragment.INDEX);
-                    intent.putExtra(Constants.Extra.IMAGE_POSITION, position);
-                    startActivity(intent);
-                }
-            });
-        pdia.dismiss();
-
-        }
-    }
+//            progressDialog.dismiss();
+//
+//        }
+//    }
 }
