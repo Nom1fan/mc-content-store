@@ -22,17 +22,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/mp3"
-        android:layout_gravity="center" />
-
-    <VideoView
-        android:id="@+id/videoView"
-        android:layout_width="1dp"
-        android:layout_height="1dp"
-        android:layout_gravity="center"
-        android:adjustViewBounds="true"
-        android:contentDescription="@string/descr_image"
-
         />
+
     <TextView
         android:id="@+id/textview"
         android:layout_width="wrap_content"
@@ -50,5 +41,12 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PLAY"
+        android:id="@+id/play_stop_button"
+        android:layout_gravity="center_horizontal" />
 
 </LinearLayout>

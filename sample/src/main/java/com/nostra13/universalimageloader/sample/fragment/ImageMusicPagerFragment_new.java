@@ -15,9 +15,10 @@
  *******************************************************************************/
 package com.nostra13.universalimageloader.sample.fragment;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -31,10 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.MediaController;
-import android.widget.ProgressBar;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -49,6 +47,7 @@ import com.nostra13.universalimageloader.sample.behaviors.validate.ValidateAudio
 import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateImageFormatBehavior;
 import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateMediaFormatBehavior;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -62,17 +61,15 @@ public class ImageMusicPagerFragment_new extends BaseFragment implements Populat
     private List<String> audioUrls;
     private ViewPager pager;
     private Button button;
-    private MediaController mediacontroller;
-    private VideoView videoView;
+    private MediaPlayer mediaPlayer;
     private List<String> thumbsUrls;
+    private ProgressDialog progressDialog;
+    private Button playStop;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fr_image_pager, container, false);
-        mediacontroller = new MediaController(getActivity());
-        mediacontroller.setAnchorView(videoView);
         pager = (ViewPager) rootView.findViewById(R.id.pager);
-
 
         List<ValidateMediaFormatBehavior> validateMediaFormatBehaviors = new LinkedList<>();
         validateMediaFormatBehaviors.add(new ValidateImageFormatBehavior());
@@ -89,6 +86,31 @@ public class ImageMusicPagerFragment_new extends BaseFragment implements Populat
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        mediaPlayer.stop();
+        mediaPlayer.release();
+        mediaPlayer = null;
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        // Make sure that we are currently visible
+        if (this.isVisible()) {
+            // If we are becoming invisible, then...
+            if (!isVisibleToUser) {
+                mediaPlayer.stop();
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
+            else {
+                // do what you like
+            }
+        }
+    }
+
+    @Override
     public void constructPostPopulate(List<List<String>> listList) {
 
         thumbsUrls = listList.get(0);
@@ -99,12 +121,11 @@ public class ImageMusicPagerFragment_new extends BaseFragment implements Populat
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                playAudioInPage(position);
             }
 
             @Override
             public void onPageSelected(int position) {
-                playAudioInPage(position);
+                    playAudioInPage(position);
             }
 
             @Override
@@ -114,27 +135,19 @@ public class ImageMusicPagerFragment_new extends BaseFragment implements Populat
         });
     }
 
-    private void playAudioInPage(int position) {
-        try {
-            Uri videoUri = Uri.parse(audioUrls.get(position));
-            mediacontroller.setVisibility(View.VISIBLE);
-            videoView.setMediaController(mediacontroller);
-            videoView.setVideoURI(videoUri);
-            videoView.setZOrderOnTop(false);
-            videoView.setVisibility(View.VISIBLE);
-            videoView.requestFocus();
-            videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    videoView.setBackgroundColor(Color.TRANSPARENT);
-                    videoView.start();
-                }
-            });
+    private void playAudioInPage(final int position) {
 
-        } catch (Exception e) {
-            Log.e("Error streaming video", e.getMessage());
-            e.printStackTrace();
+        Log.i(TAG, "Playing audio:" + audioUrls.get(position));
+        if(mediaPlayer == null) {
+            new MediaLoaderTask().execute(position);
         }
+        else {
+            mediaPlayer.start();
+        }
+    }
+
+    private void pauseAudioInPage() {
+        mediaPlayer.pause();
     }
 
     private class ImageAdapter extends PagerAdapter {
@@ -168,19 +181,30 @@ public class ImageMusicPagerFragment_new extends BaseFragment implements Populat
         }
 
         @Override
-        public Object instantiateItem(ViewGroup view, int position) {
+        public Object instantiateItem(ViewGroup view, final int position) {
             View audioLayout = inflater.inflate(R.layout.item_audio_pager_new, view, false);
             assert audioLayout != null;
             ImageView imageView = (ImageView) audioLayout.findViewById(R.id.audioimage);
-            videoView = (VideoView) audioLayout.findViewById(R.id.videoView);
+            playStop = (Button) audioLayout.findViewById(R.id.play_stop_button);
+            playStop.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(mediaPlayer!=null && mediaPlayer.isPlaying()) {
+                        pauseAudioInPage();
+                        playStop.setText("PLAY");
+                    }
+                    else {
+                        playAudioInPage(position);
+                        playStop.setText("PAUSE");
+                    }
+                }
+            });
 
-            final ProgressBar spinner = (ProgressBar) audioLayout.findViewById(R.id.loading);
             button = (Button) audioLayout.findViewById(R.id.button);
 
             ImageLoader.getInstance().displayImage(thumbsUrls.get(position), imageView, options, new SimpleImageLoadingListener() {
                 @Override
                 public void onLoadingStarted(String imageUri, View view) {
-                    spinner.setVisibility(View.VISIBLE);
                 }
 
                 @Override
@@ -205,12 +229,10 @@ public class ImageMusicPagerFragment_new extends BaseFragment implements Populat
                     }
                     Toast.makeText(view.getContext(), message, Toast.LENGTH_SHORT).show();
 
-                    spinner.setVisibility(View.GONE);
                 }
 
                 @Override
                 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                    spinner.setVisibility(View.GONE);
                 }
             });
 
@@ -246,5 +268,48 @@ public class ImageMusicPagerFragment_new extends BaseFragment implements Populat
             return null;
         }
 
+    }
+
+    private class MediaLoaderTask extends
+            android.os.AsyncTask<Integer, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setTitle("Preparing Audio");
+            progressDialog.setMessage("Buffering...");
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Integer... params) {
+            final int position = params[0];
+
+            try {
+
+                mediaPlayer = new MediaPlayer();
+
+                Uri audioUri = Uri.parse(audioUrls.get(position));
+
+                mediaPlayer = new MediaPlayer();
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mediaPlayer.setDataSource(getActivity(), audioUri);
+                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        progressDialog.dismiss();
+                        mediaPlayer.start();
+                    }
+                });
+
+                mediaPlayer.prepare();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
     }
 }
