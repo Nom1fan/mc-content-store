@@ -1,8 +1,11 @@
 package com.nostra13.universalimageloader.sample.asynctasks;
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.nostra13.universalimageloader.sample.R;
 import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateMediaFormatBehavior;
 
 import org.jsoup.Jsoup;
@@ -23,11 +26,23 @@ public class PopulateUrlsAsyncTask extends AsyncTask<Void, Void, List<String>> {
     private ArrayList<String> resultUrls = new ArrayList<>();
     private PostPopulateListener listener;
     private String urlToScan;
+    private ProgressDialog progressDialog;
 
     public PopulateUrlsAsyncTask(ValidateMediaFormatBehavior validateMediaFormatBehavior, String urlToScan, PostPopulateListener listener) {
         this.listener = listener;
         this.urlToScan = urlToScan;
         this.validateMediaFormatBehavior = validateMediaFormatBehavior;
+    }
+
+    @Override
+    public void onPreExecute() {
+        Context context = listener.getContext();
+        progressDialog = new ProgressDialog(context);
+        progressDialog.setIndeterminate(false);
+        progressDialog.setCancelable(false);
+        progressDialog.setTitle(context.getResources().getString(R.string.fetching));
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.show();
     }
 
     @Override
@@ -48,13 +63,15 @@ public class PopulateUrlsAsyncTask extends AsyncTask<Void, Void, List<String>> {
         }
         return resultUrls;
     }
-
+    
     @Override
     protected void onPostExecute(List<String> resultUrls) {
+        progressDialog.dismiss();
         listener.constructPostPopulate(resultUrls);
     }
 
     public interface PostPopulateListener {
         void constructPostPopulate(List<String> urls);
+        Context getContext();
     }
 }

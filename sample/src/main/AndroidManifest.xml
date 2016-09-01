@@ -20,7 +20,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.GalleryAndPagersLauncherActivity"
+            android:name=".activity.GalleryLauncherFragmentActivity"
             android:label="@string/ac_name_image_list" />
 		<activity
 			android:name=".activity.ComplexImageActivity"

@@ -21,7 +21,7 @@
 		android:layout_gravity="center"
 		android:visibility="gone" />
     <Button
-        android:id="@+id/button"
+        android:id="@+id/downloadButton"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_below="@+id/image"

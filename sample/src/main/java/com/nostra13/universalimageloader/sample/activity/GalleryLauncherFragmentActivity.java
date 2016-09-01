@@ -27,7 +27,7 @@ import com.nostra13.universalimageloader.sample.fragment.ImageGalleryFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageGridFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageListFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageMusicListFragment;
-import com.nostra13.universalimageloader.sample.fragment.ImageMusicPagerFragment_new;
+import com.nostra13.universalimageloader.sample.fragment.ImageMusicPagerFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImagePagerFragment;
 import com.nostra13.universalimageloader.sample.fragment.VideoGalleryFragment;
 import com.nostra13.universalimageloader.sample.fragment.VideoPagerFragment;
@@ -35,7 +35,7 @@ import com.nostra13.universalimageloader.sample.fragment.VideoPagerFragment;
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
-public class GalleryAndPagersLauncherActivity extends FragmentActivity {
+public class GalleryLauncherFragmentActivity extends FragmentActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -137,11 +137,11 @@ public class GalleryAndPagersLauncherActivity extends FragmentActivity {
                 }
                 titleRes = R.string.ac_name_image_pager;
                 break;
-            case ImageMusicPagerFragment_new.INDEX:
-                tag = ImageMusicPagerFragment_new.class.getSimpleName();
+            case ImageMusicPagerFragment.INDEX:
+                tag = ImageMusicPagerFragment.class.getSimpleName();
                 fr = getSupportFragmentManager().findFragmentByTag(tag);
                 if (fr == null) {
-                    fr = new ImageMusicPagerFragment_new();
+                    fr = new ImageMusicPagerFragment();
                     fr.setArguments(getIntent().getExtras());
                 }
                 titleRes = R.string.ac_name_image_pager;

@@ -141,7 +141,7 @@ public class ImageGIFPagerFragment extends BaseFragment implements PopulateUrlsA
 
             //spinner.setVisibility(View.GONE);
             //final ProgressBar spinner = (ProgressBar) videoLayout.findViewById(R.id.loading);
-            button = (Button) imageLayout.findViewById(R.id.button);
+            button = (Button) imageLayout.findViewById(R.id.downloadButton);
 
 
 //            ImageLoader.getInstance().displayImage(IMAGE_URLS[position], imageView, options, new SimpleImageLoadingListener() {

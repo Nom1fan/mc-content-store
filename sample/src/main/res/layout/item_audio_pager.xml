@@ -48,7 +48,7 @@
         android:layout_gravity="center"
         android:visibility="gone" />
     <Button
-        android:id="@+id/button"
+        android:id="@+id/downloadButton"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"

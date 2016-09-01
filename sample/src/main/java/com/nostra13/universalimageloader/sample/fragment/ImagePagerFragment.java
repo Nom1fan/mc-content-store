@@ -124,7 +124,7 @@ public class ImagePagerFragment extends BaseFragment implements PopulateUrlsAsyn
 //            }.execute(IMAGE_URLS[position]);
 
             final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
-            button = (Button) imageLayout.findViewById(R.id.button);
+            button = (Button) imageLayout.findViewById(R.id.downloadButton);
             final String simage = imageUrls.get(position);
 
 

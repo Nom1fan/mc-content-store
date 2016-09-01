@@ -188,7 +188,7 @@ public class VideoGalleryFragment extends AbsListViewBaseFragment implements Pop
 //            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 //                @Override
 //                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                    Intent intent = new Intent(getActivity(), GalleryAndPagersLauncherActivity.class);
+//                    Intent intent = new Intent(getActivity(), GalleryLauncherFragmentActivity.class);
 //                    intent.putExtra(Constants.Extra.FRAGMENT_INDEX, VideoPagerFragment.INDEX);
 //                    intent.putExtra(Constants.Extra.MEDIA_POSITION, position);
 //                    startActivity(intent);

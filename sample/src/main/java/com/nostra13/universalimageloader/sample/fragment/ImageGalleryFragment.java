@@ -32,7 +32,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
-import com.nostra13.universalimageloader.sample.activity.GalleryAndPagersLauncherActivity;
+import com.nostra13.universalimageloader.sample.activity.GalleryLauncherFragmentActivity;
 import com.nostra13.universalimageloader.sample.asynctasks.PopulateUrlsAsyncTask;
 import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateImageFormatBehavior;
 
@@ -59,7 +59,7 @@ public class ImageGalleryFragment extends BaseFragment implements PopulateUrlsAs
 
 
 	private void startImagePagerActivity(int position) {
-		Intent intent = new Intent(getActivity(), GalleryAndPagersLauncherActivity.class);
+		Intent intent = new Intent(getActivity(), GalleryLauncherFragmentActivity.class);
 		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImagePagerFragment.INDEX);
 		intent.putExtra(Constants.Extra.MEDIA_POSITION, position);
 		startActivity(intent);

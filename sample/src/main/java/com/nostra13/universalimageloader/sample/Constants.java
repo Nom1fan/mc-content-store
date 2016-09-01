@@ -28,7 +28,19 @@ public final class Constants {
     public static final String VIDEO_LIB_URL = STORE_URL + "Video/";
     public static final String VIDEO_THUMBS_URL = STORE_URL + "Video/Thumbnails/";
 
+	private Constants() {
+	}
 
+	public static class Config {
+		public static final boolean DEVELOPER_MODE = false;
+	}
+	
+	public static class Extra {
+		public static final String FRAGMENT_INDEX = "com.nostra13.example.universalimageloader.FRAGMENT_INDEX";
+		public static final String MEDIA_POSITION = "com.nostra13.example.universalimageloader.MEDIA_POSITION";
+	}
+
+	//region Perhaps unnecessary shit
 	public static final String[] IMAGES = new String[] {
 			// Heavy images
 			"https://lh6.googleusercontent.com/-55osAWw3x0Q/URquUtcFr5I/AAAAAAAAAbs/rWlj1RUKrYI/s1024/A%252520Photographer.jpg",
@@ -169,48 +181,5 @@ public final class Constants {
 			"", // Empty link
 			"http://wrong.site.com/corruptedLink", // Wrong link
 	};
-
-	private Constants() {
-	}
-
-	public static class Config {
-		public static final boolean DEVELOPER_MODE = false;
-	}
-	
-	public static class Extra {
-		public static final String FRAGMENT_INDEX = "com.nostra13.example.universalimageloader.FRAGMENT_INDEX";
-		public static final String MEDIA_POSITION = "com.nostra13.example.universalimageloader.MEDIA_POSITION";
-	}
+	//endregion
 }
-//class MyTask extends AsyncTask<Void, Void, ArrayList<String>> {
-//
-//    ArrayList<String> arr_linkText=new ArrayList<String>();
-//
-//    @Override
-//    protected ArrayList<String> doInBackground(Void... params) {
-//
-//        Document doc;
-//        String linkText = "";
-//
-//        try {
-//            doc = Jsoup.connect("http://server.mediacallz.com/ContentStore/files/Photos/").get();
-//            Elements links = doc.getElementsByTag("a");
-//            for (Element el : links) {
-//                linkText = el.attr("href");
-//                arr_linkText.add(linkText); // add value to ArrayList
-//            }
-//        } catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
-//        return arr_linkText;     //<< retrun ArrayList from here
-//    }
-//
-//
-//    @Override
-//    protected void onPostExecute(ArrayList<String> result) {
-//
-//        // get all value from result to display in TextView
-//        }
-//    }
-//}

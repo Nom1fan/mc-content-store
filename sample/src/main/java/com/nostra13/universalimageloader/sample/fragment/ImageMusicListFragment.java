@@ -16,7 +16,6 @@
 package com.nostra13.universalimageloader.sample.fragment;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -35,16 +34,12 @@ import android.widget.TextView;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.CircleBitmapDisplayer;
-import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
 import com.nostra13.universalimageloader.sample.asynctasks.PopulateUrlsAsyncTask;
 import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateImageFormatBehavior;
 
-import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -54,8 +49,9 @@ public class ImageMusicListFragment extends AbsListViewBaseFragment implements P
 
 	public static final int INDEX = 12;
     private List<String> audioThumbsUrls;
+	private List<String> fileNames;
 
-    @Override
+	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fr_image_list, container, false);
 		listView = (ListView) rootView.findViewById(android.R.id.list);
@@ -68,7 +64,6 @@ public class ImageMusicListFragment extends AbsListViewBaseFragment implements P
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		AnimateFirstDisplayListener.displayedImages.clear();
 	}
 
     @Override
@@ -81,12 +76,22 @@ public class ImageMusicListFragment extends AbsListViewBaseFragment implements P
                 startAudioPagerActivity(position);
             }
         });
+
+		prepareFileNames();
     }
+
+	private void prepareFileNames() {
+		fileNames = new ArrayList<>();
+		for (String thumbUrl : audioThumbsUrls) {
+			Ringtone r = RingtoneManager.getRingtone(getActivity(), Uri.parse(thumbUrl));
+			String fileName = r.getTitle(getActivity());
+			fileNames.add(fileName);
+		}
+	}
 
     private class ImageAdapter extends BaseAdapter {
 
         private LayoutInflater inflater;
-		private ImageLoadingListener animateFirstListener = new AnimateFirstDisplayListener();
 
 		private DisplayImageOptions options;
 
@@ -133,9 +138,7 @@ public class ImageMusicListFragment extends AbsListViewBaseFragment implements P
 				holder = (ViewHolder) view.getTag();
 			}
 
-			//holder.text.setText("Track " + (position + 1));
-            Ringtone r = RingtoneManager.getRingtone(getActivity(), Uri.parse(audioThumbsUrls.get(position)));
-            holder.text.setText(r.getTitle(getActivity()));
+            holder.text.setText(fileNames.get(position));
             ImageLoader.getInstance().displayImage(audioThumbsUrls.get(position), holder.image, options);
 			return view;
 		}
@@ -144,23 +147,6 @@ public class ImageMusicListFragment extends AbsListViewBaseFragment implements P
 	static class ViewHolder {
 		TextView text;
 		ImageView image;
-	}
-
-	private static class AnimateFirstDisplayListener extends SimpleImageLoadingListener {
-
-		static final List<String> displayedImages = Collections.synchronizedList(new LinkedList<String>());
-
-		@Override
-		public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-			if (loadedImage != null) {
-				ImageView imageView = (ImageView) view;
-				boolean firstDisplay = !displayedImages.contains(imageUri);
-				if (firstDisplay) {
-					FadeInBitmapDisplayer.animate(imageView, 500);
-					displayedImages.add(imageUri);
-				}
-			}
-		}
 	}
 
 }

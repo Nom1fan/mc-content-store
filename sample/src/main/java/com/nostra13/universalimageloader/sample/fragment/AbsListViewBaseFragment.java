@@ -23,7 +23,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
-import com.nostra13.universalimageloader.sample.activity.GalleryAndPagersLauncherActivity;
+import com.nostra13.universalimageloader.sample.activity.GalleryLauncherFragmentActivity;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -74,14 +74,14 @@ public abstract class AbsListViewBaseFragment extends BaseFragment {
 	}
 
 	protected void startImagePagerActivity(int position) {
-		Intent intent = new Intent(getActivity(), GalleryAndPagersLauncherActivity.class);
+		Intent intent = new Intent(getActivity(), GalleryLauncherFragmentActivity.class);
 		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImagePagerFragment.INDEX);
 		intent.putExtra(Constants.Extra.MEDIA_POSITION, position);
 		startActivity(intent);
 	}
 
     protected void startGIFImagePagerActivity(int position) {
-        Intent intent = new Intent(getActivity(), GalleryAndPagersLauncherActivity.class);
+        Intent intent = new Intent(getActivity(), GalleryLauncherFragmentActivity.class);
         intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageGIFPagerFragment.INDEX);
         intent.putExtra(Constants.Extra.MEDIA_POSITION, position);
         startActivity(intent);
@@ -89,7 +89,7 @@ public abstract class AbsListViewBaseFragment extends BaseFragment {
 
 
     protected void startVideoPagerActivity(int position) {
-        Intent intent = new Intent(getActivity(), GalleryAndPagersLauncherActivity.class);
+        Intent intent = new Intent(getActivity(), GalleryLauncherFragmentActivity.class);
         intent.putExtra(Constants.Extra.FRAGMENT_INDEX, VideoPagerFragment.INDEX);
         intent.putExtra(Constants.Extra.MEDIA_POSITION, position);
         startActivity(intent);
@@ -97,8 +97,8 @@ public abstract class AbsListViewBaseFragment extends BaseFragment {
 
 
     protected void startAudioPagerActivity(int position) {
-        Intent intent = new Intent(getActivity(), GalleryAndPagersLauncherActivity.class);
-        intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageMusicPagerFragment_new.INDEX);
+        Intent intent = new Intent(getActivity(), GalleryLauncherFragmentActivity.class);
+        intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageMusicPagerFragment.INDEX);
         intent.putExtra(Constants.Extra.MEDIA_POSITION, position);
         startActivity(intent);
     }

@@ -29,5 +29,6 @@
 
 	<!-- Content descriptions -->
 	<string name="descr_image">Image</string>
+	<string name="fetching">Fetching content...</string>
 
 </resources>

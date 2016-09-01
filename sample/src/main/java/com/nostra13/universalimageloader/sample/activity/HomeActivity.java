@@ -29,57 +29,44 @@ import com.nostra13.universalimageloader.sample.fragment.ImageGIFGridFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageGridFragment;
 import com.nostra13.universalimageloader.sample.fragment.ImageMusicListFragment;
 import com.nostra13.universalimageloader.sample.fragment.VideoGalleryFragment;
-import com.nostra13.universalimageloader.utils.L;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
 public class HomeActivity extends Activity {
 
-	private static final String TEST_FILE_NAME = "Universal Image Loader @#&=+-_.,!()~'%20.png";
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.ac_home);
-
-		File testImageOnSdCard = new File("/mnt/sdcard", TEST_FILE_NAME);
-		if (!testImageOnSdCard.exists()) {
-			copyTestImageToSdCard(testImageOnSdCard);
-		}
 	}
 
 //	public void onImageListClick(View view) {
-//		Intent intent = new Intent(this, GalleryAndPagersLauncherActivity.class);
+//		Intent intent = new Intent(this, GalleryLauncherFragmentActivity.class);
 //		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageListFragment.INDEX);
 //		startActivity(intent);
 //	}
 
 	public void onImageGridClick(View view) {
-		Intent intent = new Intent(this, GalleryAndPagersLauncherActivity.class);
+		Intent intent = new Intent(this, GalleryLauncherFragmentActivity.class);
 		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageGridFragment.INDEX);
 		startActivity(intent);
 	}
 
     public void onImageGIFGridClick(View view) {
-        Intent intent = new Intent(this, GalleryAndPagersLauncherActivity.class);
+        Intent intent = new Intent(this, GalleryLauncherFragmentActivity.class);
         intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageGIFGridFragment.INDEX);
         startActivity(intent);
     }
 
 //	public void onImagePagerClick(View view) {
-//		Intent intent = new Intent(this, GalleryAndPagersLauncherActivity.class);
+//		Intent intent = new Intent(this, GalleryLauncherFragmentActivity.class);
 //		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImagePagerFragment.INDEX);
 //		startActivity(intent);
 //	}
 //
 //	public void onImageGalleryClick(View view) {
-//		Intent intent = new Intent(this, GalleryAndPagersLauncherActivity.class);
+//		Intent intent = new Intent(this, GalleryLauncherFragmentActivity.class);
 //		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageGalleryFragment.INDEX);
 //		startActivity(intent);
 //	}
@@ -90,13 +77,13 @@ public class HomeActivity extends Activity {
 //	}
 
 	public void onVideoGalleryClick(View view){
-		Intent intent = new Intent(this,GalleryAndPagersLauncherActivity.class);
+		Intent intent = new Intent(this,GalleryLauncherFragmentActivity.class);
 		intent.putExtra(Constants.Extra.FRAGMENT_INDEX, VideoGalleryFragment.INDEX);
 		startActivity(intent);
 	}
 
     public void onMusicListClick(View view){
-        Intent intent = new Intent(this,GalleryAndPagersLauncherActivity.class);
+        Intent intent = new Intent(this,GalleryLauncherFragmentActivity.class);
         intent.putExtra(Constants.Extra.FRAGMENT_INDEX, ImageMusicListFragment.INDEX);
         startActivity(intent);
     }
@@ -127,28 +114,4 @@ public class HomeActivity extends Activity {
 		}
 	}
 
-	private void copyTestImageToSdCard(final File testImageOnSdCard) {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					InputStream is = getAssets().open(TEST_FILE_NAME);
-					FileOutputStream fos = new FileOutputStream(testImageOnSdCard);
-					byte[] buffer = new byte[8192];
-					int read;
-					try {
-						while ((read = is.read(buffer)) != -1) {
-							fos.write(buffer, 0, read);
-						}
-					} finally {
-						fos.flush();
-						fos.close();
-						is.close();
-					}
-				} catch (IOException e) {
-					L.w("Can't copy test image onto SD card");
-				}
-			}
-		}).start();
-	}
 }
