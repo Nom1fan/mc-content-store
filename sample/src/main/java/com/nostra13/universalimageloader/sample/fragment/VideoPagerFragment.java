@@ -1,5 +1,6 @@
 package com.nostra13.universalimageloader.sample.fragment;
 
+import android.app.Activity;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -9,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,8 +44,8 @@ public class VideoPagerFragment extends Fragment implements PostPopulateListener
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fr_image_pager, container, false);
-        mediacontroller = new MediaController(getActivity());
-        mediacontroller.setAnchorView(videoView);
+
+        prepareMediaController();
 
         pager = (ViewPager) rootView.findViewById(R.id.pager);
         pager.setVisibility(View.GONE);
@@ -91,10 +93,45 @@ public class VideoPagerFragment extends Fragment implements PostPopulateListener
         });
     }
 
+    private void prepareMediaController() {
+        mediacontroller = new MediaController(getActivity()) {
+
+            @Override
+            public void hide() {
+
+                try {
+                    mediacontroller.show();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+            public boolean dispatchKeyEvent(KeyEvent event) {
+                if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+                    currentViewPos=null;
+                    ((Activity) getContext()).finish();
+                }
+                return super.dispatchKeyEvent(event);
+            }
+        };
+        mediacontroller.setAnchorView(videoView);
+    }
+
     private void playVideoInPage(int position) {
         if (currentViewPos != position) {
+
             videoViews[currentViewPos].pause();
+
+            videoViews[position].setVideoURI(Uri.parse(videoUrls.get(position)));
+            videoViews[position].setMediaController(mediacontroller);
+            videoViews[position].setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                public void onPrepared(MediaPlayer mp) {
+                    mediacontroller.show();
+                }
+            });
+
             videoViews[position].start();
+
             currentViewPos = position;
         }
     }
@@ -118,8 +155,6 @@ public class VideoPagerFragment extends Fragment implements PostPopulateListener
 
         @Override
         public Object instantiateItem(ViewGroup view, int position) {
-            mediacontroller = new MediaController(getActivity());
-            mediacontroller.setAnchorView(videoView);
 
             FrameLayout videoPageLayout = (FrameLayout) inflater.inflate(R.layout.item_video_pager, view, false);
             if(videoPageLayout ==null) {
@@ -130,18 +165,22 @@ public class VideoPagerFragment extends Fragment implements PostPopulateListener
 
             videoView = (CustomVideoView) videoPageLayout.findViewById(R.id.videoView);
             videoView.setMediaController(mediacontroller);
-            videoView.setVideoURI(Uri.parse(videoUrls.get(position)));
+            // videoView.setVideoURI(Uri.parse(audioUrls.get(position)));
+
             videoView.requestFocus();
             videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 public void onPrepared(MediaPlayer mp) {
-
+                 try {
+                     mediacontroller.show();
+                 }catch (Exception e) {e.printStackTrace();}
                 }
             });
 
             videoViews[position] = videoView;
             if (currentViewPos == null) {
-                videoViews[position].start();
+                //  videoViews[position].start();
                 currentViewPos = position;
+                playVideoFirstTime(position);
             }
             videoPageLayout.bringChildToFront(videoView);
 
@@ -155,6 +194,14 @@ public class VideoPagerFragment extends Fragment implements PostPopulateListener
             view.addView(videoPageLayout, 0);
             return videoPageLayout;
         }
+
+        private void playVideoFirstTime(int position) {
+
+            videoViews[position].setVideoURI(Uri.parse(videoUrls.get(position)));
+            videoViews[position].start();
+        }
+
+
 
         @Override
         public void setPrimaryItem(ViewGroup container, int position, Object object) {
