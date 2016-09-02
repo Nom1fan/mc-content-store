@@ -29,6 +29,10 @@
 
 	<!-- Content descriptions -->
 	<string name="descr_image">Image</string>
-	<string name="fetching">Fetching content...</string>
+	<string name="fetching">Fetching content…</string>
+	<string name="buffering">Buffering…</string>
+	<string name="cancel">Cancel</string>
+	<string name="downloading">Downloading…</string>
+	<string name="downlod_failed">Download failed!</string>
 
 </resources>

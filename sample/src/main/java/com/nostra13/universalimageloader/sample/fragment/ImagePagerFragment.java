@@ -18,7 +18,6 @@ package com.nostra13.universalimageloader.sample.fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -38,7 +37,6 @@ import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
-import com.nostra13.universalimageloader.sample.asynctasks.DownloadImageAsyncTask;
 import com.nostra13.universalimageloader.sample.asynctasks.PopulateUrlsAsyncTask;
 import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateImageFormatBehavior;
 
@@ -53,7 +51,7 @@ public class ImagePagerFragment extends BaseFragment implements PopulateUrlsAsyn
     public static final int INDEX = 2;
     private List<String> imageUrls;
     private ViewPager pager;
-    private Button button;
+    private Button downloadButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -105,28 +103,13 @@ public class ImagePagerFragment extends BaseFragment implements PopulateUrlsAsyn
         }
 
         @Override
-        public Object instantiateItem(ViewGroup view, int position) {
+        public Object instantiateItem(ViewGroup view, final int position) {
             View imageLayout = inflater.inflate(R.layout.item_pager_image, view, false);
             assert imageLayout != null;
             ImageView imageView = (ImageView) imageLayout.findViewById(R.id.image);
-            //final GifImageView imageView =(GifImageView) videoLayout.findViewById(R.id.image);
-            //imageView.startAnimation();
-            //final GifImageView imageView =(GifImageView) videoLayout.findViewById(R.id.image);
-            //imageView.startAnimation();
-
-//            new GifDataDownloader() {
-//                @Override protected void onPostExecute(final byte[] bytes) {
-//                    imageView.setBytes(bytes);
-//                    imageView.startAnimation();
-//                    Log.d("TAG----", "GIF width is " + imageView.getGifWidth());
-//                    Log.d("TAG---", "GIF height is " + imageView.getGifHeight());
-//                }
-//            }.execute(IMAGE_URLS[position]);
 
             final ProgressBar spinner = (ProgressBar) imageLayout.findViewById(R.id.loading);
-            button = (Button) imageLayout.findViewById(R.id.downloadButton);
-            final String simage = imageUrls.get(position);
-
+            downloadButton = (Button) imageLayout.findViewById(R.id.downloadButton);
 
             ImageLoader.getInstance().displayImage(imageUrls.get(position), imageView, options, new SimpleImageLoadingListener() {
                 @Override
@@ -165,17 +148,9 @@ public class ImagePagerFragment extends BaseFragment implements PopulateUrlsAsyn
                 }
             });
 
-            button.setOnClickListener(new View.OnClickListener() {
+            downloadButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View arg0) {
-
-                    // Execute DownloadImageAsyncTask AsyncTask
-                    new DownloadImageAsyncTask(getActivity()).execute(simage);
-                    //String path1= Environment.getExternalStorageDirectory().toString();
-                    String path1=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath();
-                    //path1=path1+"/imageloader";
-
-                    Toast.makeText(getActivity().getApplication().getBaseContext(), "The file is downloaded at " + path1, Toast.LENGTH_LONG).show();
-                    //Toast.makeText(getActivity().getApplication().getApplicationContext(), "this is image", Toast.LENGTH_LONG);
+                    downloadFile(imageUrls.get(position));
                 }
             });
 

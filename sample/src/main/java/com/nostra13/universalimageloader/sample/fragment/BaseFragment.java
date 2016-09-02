@@ -20,8 +20,11 @@ import android.support.v4.app.Fragment;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.sample.R;
+
+import flows.DownloadFileFlow;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -52,4 +55,10 @@ public abstract class BaseFragment extends Fragment {
 				return false;
 		}
 	}
+
+    protected void downloadFile(final String url) {
+        DownloadFileFlow downloadFileFlow = new DownloadFileFlow();
+        downloadFileFlow.startDownloadFileFlow(getActivity(), url);
+    }
+
 }

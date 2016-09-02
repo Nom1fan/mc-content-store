@@ -6,7 +6,6 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -29,7 +28,7 @@ import java.util.List;
 /**
  * Created by maitray on 9/8/16.
  */
-public class VideoPagerFragment extends Fragment implements PostPopulateListener {
+public class VideoPagerFragment extends BaseFragment implements PostPopulateListener {
 
     public static final int INDEX = 9;
 
@@ -154,7 +153,7 @@ public class VideoPagerFragment extends Fragment implements PostPopulateListener
         }
 
         @Override
-        public Object instantiateItem(ViewGroup view, int position) {
+        public Object instantiateItem(ViewGroup view, final int position) {
 
             FrameLayout videoPageLayout = (FrameLayout) inflater.inflate(R.layout.item_video_pager, view, false);
             if(videoPageLayout ==null) {
@@ -187,7 +186,7 @@ public class VideoPagerFragment extends Fragment implements PostPopulateListener
             Button downloadButton = (Button) videoPageLayout.findViewById(R.id.downloadButton);
             downloadButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View arg0) {
-//                    new DownloadImage().execute(simage);
+                    downloadFile(videoUrls.get(position));
                 }
             });
 

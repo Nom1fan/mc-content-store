@@ -2,7 +2,11 @@ package com.nostra13.universalimageloader.sample.utils;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.Uri;
+
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.util.Arrays;
@@ -37,6 +41,16 @@ public abstract class MediaFilesUtils {
         return videoFormatsList.contains(extension.toLowerCase());
     }
 
+
+    public static String getFileNameByUrl(Context context, String url) {
+        Ringtone r = RingtoneManager.getRingtone(context, Uri.parse(url));
+        return r.getTitle(context);
+    }
+
+    public static String getFileNameWithoutExtensionByUrl(Context context, String url) {
+        String fileName = getFileNameByUrl(context, url);
+        return FilenameUtils.removeExtension(fileName);
+    }
 
     public static File getFileByMD5(String md5, String folderPath) {
         File result = null;

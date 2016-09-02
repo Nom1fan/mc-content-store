@@ -17,9 +17,6 @@ package com.nostra13.universalimageloader.sample.fragment;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +35,7 @@ import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
 import com.nostra13.universalimageloader.sample.asynctasks.PopulateUrlsAsyncTask;
 import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateImageFormatBehavior;
+import com.nostra13.universalimageloader.sample.utils.MediaFilesUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,8 +81,7 @@ public class ImageMusicListFragment extends AbsListViewBaseFragment implements P
 	private void prepareFileNames() {
 		fileNames = new ArrayList<>();
 		for (String thumbUrl : audioThumbsUrls) {
-			Ringtone r = RingtoneManager.getRingtone(getActivity(), Uri.parse(thumbUrl));
-			String fileName = r.getTitle(getActivity());
+			String fileName = MediaFilesUtils.getFileNameWithoutExtensionByUrl(getActivity(), thumbUrl);
 			fileNames.add(fileName);
 		}
 	}
