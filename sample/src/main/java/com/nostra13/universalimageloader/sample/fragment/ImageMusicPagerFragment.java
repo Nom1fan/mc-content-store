@@ -141,9 +141,10 @@ public class ImageMusicPagerFragment extends BaseFragment implements PopulateMul
             }
 
             public boolean dispatchKeyEvent(KeyEvent event) {
-                if (event.getKeyCode() == KeyEvent.KEYCODE_BACK)
+                if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+                    currentViewPos=null;
                     ((Activity) getContext()).finish();
-
+                }
                 return super.dispatchKeyEvent(event);
             }
         };
