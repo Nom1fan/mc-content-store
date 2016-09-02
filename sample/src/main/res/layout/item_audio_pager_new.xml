@@ -13,46 +13,48 @@
         android:layout_height="40dp"
         android:background="@drawable/downloadbutton"
         android:layout_gravity="top|left"
-        android:layout_alignLeft="@+id/textview"
-        android:layout_alignTop="@+id/textview"
         android:layout_marginTop="10dp"
-        android:layout_alignBaseline="@+id/audioimage" />
+        android:layout_alignParentTop="true" />
 
     <ImageView
         android:id="@+id/audioimage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
         android:src="@drawable/mp3"
         android:layout_gravity="center"
-        android:layout_toEndOf="@+id/textview"
-        android:layout_marginLeft="45dp"
-        android:layout_marginStart="45dp"
-        android:layout_marginTop="49dp"
         android:contentDescription="audio image"
-        android:layout_toRightOf="@+id/textview"
-        android:layout_marginBottom="20dp" />
+        android:layout_alignParentTop="false"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/downloadButton" />
 
     <TextView
         android:id="@+id/textview"
-        android:layout_width="13dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:adjustViewBounds="true"
         android:textColor="@color/background_floating_material_dark"
         android:layout_below="@+id/audioimage"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
+        android:textAlignment="center"
+        android:text="hi"
+        android:gravity="center" />
 
     <com.nostra13.universalimageloader.sample.fragment.CustomVideoView
         android:id="@+id/videoView"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
         android:layout_gravity="center"
         android:adjustViewBounds="true"
-        android:contentDescription="@string/descr_image"
 
-        android:layout_below="@+id/downloadButton"
-        android:layout_alignLeft="@+id/audioimage"
-        android:layout_alignRight="@+id/audioimage"
-        android:layout_marginTop="20dp" />
+        android:visibility="visible"
+        android:background="#00ffffff"
+        android:layout_below="@+id/textview"
+        android:focusable="true"
+        android:clickable="true"
+        android:backgroundTint="#00ffffff"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

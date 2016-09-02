@@ -198,7 +198,7 @@ public class ImageMusicPagerFragment extends BaseFragment implements PopulateMul
             videoView.requestFocus();
             videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 public void onPrepared(MediaPlayer mp) {
-
+                    mediacontroller.show();
                 }
             });
 
