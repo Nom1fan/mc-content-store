@@ -89,8 +89,19 @@ public class ImageMusicPagerFragment extends BaseFragment implements PopulateMul
 
     private void playAudioInPage(int position) {
         if (currentViewPos != position) {
+
             videoViews[currentViewPos].pause();
+
+            videoViews[position].setVideoURI(Uri.parse(audioUrls.get(position)));
+            videoViews[position].setMediaController(mediacontroller);
+            videoViews[position].setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                public void onPrepared(MediaPlayer mp) {
+                    mediacontroller.show();
+                }
+            });
+
             videoViews[position].start();
+
             currentViewPos = position;
         }
     }
@@ -121,7 +132,12 @@ public class ImageMusicPagerFragment extends BaseFragment implements PopulateMul
 
             @Override
             public void hide() {
-                mediacontroller.show();
+
+                try {
+                    mediacontroller.show();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
 
             public boolean dispatchKeyEvent(KeyEvent event) {
@@ -144,7 +160,6 @@ public class ImageMusicPagerFragment extends BaseFragment implements PopulateMul
                 playAudioInPage(position);
             }
 
-
             @Override
             public void onPageSelected(int position) {
             }
@@ -154,6 +169,12 @@ public class ImageMusicPagerFragment extends BaseFragment implements PopulateMul
 
             }
         });
+    }
+
+    private void playAudioFirstTime(int position) {
+
+            videoViews[position].setVideoURI(Uri.parse(audioUrls.get(position)));
+            videoViews[position].start();
     }
 
     private class ViewAdapter extends PagerAdapter {
@@ -193,7 +214,7 @@ public class ImageMusicPagerFragment extends BaseFragment implements PopulateMul
 
             videoView = (CustomVideoView) audioPageLayout.findViewById(R.id.videoView);
             videoView.setMediaController(mediacontroller);
-            videoView.setVideoURI(Uri.parse(audioUrls.get(position)));
+           // videoView.setVideoURI(Uri.parse(audioUrls.get(position)));
 
             videoView.requestFocus();
             videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -204,8 +225,9 @@ public class ImageMusicPagerFragment extends BaseFragment implements PopulateMul
 
             videoViews[position] = videoView;
             if (currentViewPos == null) {
-                videoViews[position].start();
+              //  videoViews[position].start();
                 currentViewPos = position;
+                playAudioFirstTime(position);
             }
 
             audioPageLayout.bringChildToFront(videoView);
