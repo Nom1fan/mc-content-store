@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.media.MediaPlayer;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -30,6 +28,7 @@ import com.nostra13.universalimageloader.sample.asynctasks.PopulateMultipleUrlsL
 import com.nostra13.universalimageloader.sample.behaviors.validate.ValidateAudioFormatBehavior;
 import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateImageFormatBehavior;
 import com.nostra13.universalimageloader.sample.behaviors.validate.media.ValidateMediaFormatBehavior;
+import com.nostra13.universalimageloader.sample.utils.MediaFilesUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -90,12 +89,15 @@ public class ImageMusicPagerFragment extends BaseFragment implements PopulateMul
     private void playAudioInPage(int position) {
         if (currentViewPos != position) {
 
+            showProgressDialog();
+
             videoViews[currentViewPos].pause();
 
             videoViews[position].setVideoURI(Uri.parse(audioUrls.get(position)));
             videoViews[position].setMediaController(mediacontroller);
             videoViews[position].setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 public void onPrepared(MediaPlayer mp) {
+                    dismissProgressDialog();
                     mediacontroller.show();
                 }
             });
@@ -109,8 +111,7 @@ public class ImageMusicPagerFragment extends BaseFragment implements PopulateMul
     private void prepareFileNames() {
         fileNames = new ArrayList<>();
         for (String thumbUrl : audioThumbsUrls) {
-            Ringtone r = RingtoneManager.getRingtone(getActivity(), Uri.parse(thumbUrl));
-            String fileName = r.getTitle(getActivity());
+            String fileName = MediaFilesUtils.getFileNameWithoutExtensionByUrl(getActivity(), thumbUrl);
             fileNames.add(fileName);
         }
     }
@@ -173,7 +174,7 @@ public class ImageMusicPagerFragment extends BaseFragment implements PopulateMul
     }
 
     private void playAudioFirstTime(int position) {
-
+            showProgressDialog();
             videoViews[position].setVideoURI(Uri.parse(audioUrls.get(position)));
             videoViews[position].start();
     }
@@ -220,6 +221,7 @@ public class ImageMusicPagerFragment extends BaseFragment implements PopulateMul
             videoView.requestFocus();
             videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 public void onPrepared(MediaPlayer mp) {
+                    dismissProgressDialog();
                     mediacontroller.show();
                 }
             });

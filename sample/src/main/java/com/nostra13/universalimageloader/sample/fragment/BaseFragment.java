@@ -15,6 +15,7 @@
  *******************************************************************************/
 package com.nostra13.universalimageloader.sample.fragment;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.Menu;
@@ -30,11 +31,16 @@ import flows.DownloadFileFlow;
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
 public abstract class BaseFragment extends Fragment {
-	@Override
+
+    private ProgressDialog progressDialog;
+
+    @Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setHasOptionsMenu(true);
+
+        progressDialog = new ProgressDialog(getActivity());
 	}
 
 	@Override
@@ -59,6 +65,28 @@ public abstract class BaseFragment extends Fragment {
     protected void downloadFile(final String url) {
         DownloadFileFlow downloadFileFlow = new DownloadFileFlow();
         downloadFileFlow.startDownloadFileFlow(getActivity(), url);
+    }
+
+    protected void showProgressDialog() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressDialog.setIndeterminate(false);
+                progressDialog.setCancelable(false);
+                progressDialog.setTitle(getActivity().getResources().getString(R.string.buffering));
+                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                progressDialog.show();
+            }
+        });
+    }
+
+    protected void dismissProgressDialog() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressDialog.dismiss();
+            }
+        });
     }
 
 }

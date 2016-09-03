@@ -119,12 +119,15 @@ public class VideoPagerFragment extends BaseFragment implements PostPopulateList
     private void playVideoInPage(int position) {
         if (currentViewPos != position) {
 
+            showProgressDialog();
+
             videoViews[currentViewPos].pause();
 
             videoViews[position].setVideoURI(Uri.parse(videoUrls.get(position)));
             videoViews[position].setMediaController(mediacontroller);
             videoViews[position].setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 public void onPrepared(MediaPlayer mp) {
+                    dismissProgressDialog();
                     mediacontroller.show();
                 }
             });
@@ -164,20 +167,19 @@ public class VideoPagerFragment extends BaseFragment implements PostPopulateList
 
             videoView = (CustomVideoView) videoPageLayout.findViewById(R.id.videoView);
             videoView.setMediaController(mediacontroller);
-            // videoView.setVideoURI(Uri.parse(audioUrls.get(position)));
 
             videoView.requestFocus();
             videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 public void onPrepared(MediaPlayer mp) {
                  try {
+                     dismissProgressDialog();
                      mediacontroller.show();
-                 }catch (Exception e) {e.printStackTrace();}
+                 } catch (Exception e) {e.printStackTrace();}
                 }
             });
 
             videoViews[position] = videoView;
             if (currentViewPos == null) {
-                //  videoViews[position].start();
                 currentViewPos = position;
                 playVideoFirstTime(position);
             }
@@ -193,14 +195,6 @@ public class VideoPagerFragment extends BaseFragment implements PostPopulateList
             view.addView(videoPageLayout, 0);
             return videoPageLayout;
         }
-
-        private void playVideoFirstTime(int position) {
-
-            videoViews[position].setVideoURI(Uri.parse(videoUrls.get(position)));
-            videoViews[position].start();
-        }
-
-
 
         @Override
         public void setPrimaryItem(ViewGroup container, int position, Object object) {
@@ -220,6 +214,12 @@ public class VideoPagerFragment extends BaseFragment implements PostPopulateList
         @Override
         public Parcelable saveState() {
             return null;
+        }
+
+        private void playVideoFirstTime(int position) {
+            showProgressDialog();
+            videoViews[position].setVideoURI(Uri.parse(videoUrls.get(position)));
+            videoViews[position].start();
         }
     }
 }
